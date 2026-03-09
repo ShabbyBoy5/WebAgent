@@ -1,152 +1,117 @@
-# WebDreamer: Model-Based Planning for Web Agents
+# WebAgent
 
-![image](https://github.com/user-attachments/assets/a1189fee-ff43-45fc-a818-3dc6befb6ad2)
+A web browsing agent that uses **Claude** for action generation and **Dreamer-7B** as a world model for look-ahead planning, all driven by **Playwright** in a real browser.
 
-## Release Plan
-- [x] Release world model [training data](https://huggingface.co/datasets/osunlp/Dreamer-V1-Data)
-- [x] Release [checkpoints](https://huggingface.co/osunlp/Dreamer-7B)
+Two modes:
+- **Reactive** — Claude sees the page and picks the best next action (fast, ~2s/step)
+- **Planning** — Claude proposes multiple candidates, Dreamer-7B predicts outcomes, Claude scores them (~20s/step, smarter)
 
-## About
-This repo contains the code for our paper [*Is Your LLM Secretly a World Model of the Internet*? Model-Based Planning for Web Agents](https://arxiv.org/abs/2411.06559).
+## Setup
 
-Our paper tackles the critical question: “*How to scale inference-time compute for language agents?*” The solution lies in using LLMs as a world model of the internet to predict the outcomes of actions on websites. Our method, **WebDreamer**, employs LLM-based simulation for speculative planning on the web, surpassing reactive baselines while offering greater safety and flexibility compared to tree search methods.
-All resources (including training data and resulting models) are available at [HF Collection](https://huggingface.co/collections/osunlp/webdreamer-67ee17325839c8a02339dbfb).
+Requires Python 3.12 and a GPU with ~5GB VRAM (for Dreamer-7B planning mode).
 
-## Results
-### Strong performance on VisualWebArena and Mind2Web-live
-| Benchmark        | Method                                 | Success Rate       |
-|------------------|-----------------|--------------------|
-| **VisualWebArena** | GPT-4o + Reactive | 17.6%       |
-|  | GPT-4o + Tree Search | 26.2%    |
-|  | **GPT-4o + WebDreamer** | 23.6% (↑34.1%) |
-| **Online-Mind2Web** | GPT-4o + Reactive | 26.0%       |
-|  | **GPT-4o + WebDreamer** | 37.0% (↑42.3%) |
-| **Mind2Web-live**   | GPT-4o + Reactive | 20.2%       |
-|  | **GPT-4o + WebDreamer**         | 25.0% (↑23.8%)    |
+```bash
+# Create venv
+uv venv --python 3.12 ~/webagent-env
+source ~/webagent-env/bin/activate
 
-Compared to the reactive baselines, WebDreamer significantly improves performance by 34.1%, 42.3%, and 23.8% on VisualWebArena, Online-Mind2Web, and Mind2Web-live, respectively.
+# Install dependencies
+pip install anthropic playwright pillow torch transformers bitsandbytes accelerate qwen-vl-utils
 
-### Better efficiency than tree search with true interactions
-<img width="1502" alt="image" src="https://github.com/user-attachments/assets/0afbc22d-b1eb-4026-a167-e1852cde7677">
-
-WebDreamer effectively explores the search space through simulations, which largely reduces the reliance on real-world interactions while maintaining robust performance.
-
-
-## Structure of this repo
-[`main`](https://github.com/OSU-NLP-Group/WebDreamer): Different modules of WebDreamer that can be played with independently.
-
-[`vwa`](https://github.com/OSU-NLP-Group/WebDreamer/tree/vwa): Code to reproduce our experiments on VisualWebArena. :construction:
-
-[`mind2web-live`](https://github.com/OSU-NLP-Group/WebDreamer/tree/mind2web-live): Code to reproduce our experiments on Mind2Web-live. :construction:
-
-## WebDreamer Modules Usage
-
-### World Model
-The world model module predicts webpage changes in multiple format (change description, a11y tree, html). 
-
-#### Example Code
-```python
-world_model = WebWorldModel(OpenAI(api_key=os.environ["OPENAI_API_KEY"]))
-screenshot_path = "demo_data/shopping_0.png"
-screenshot = encode_image(screenshot_path)
-screenshot = "data:image/jpeg;base64," + screenshot
-action_description = "type 'red blanket' in the search bar and click search"
-task = "Buy the least expensive red blanket (in any size) from 'Blankets & Throws' category."
-
-imagination = world_model.multiple_step_change_prediction(screenshot, screenshot_path, task,
-                                                          action_description,
-                                                          format='accessibility', k=3)
+# Install browser
+python -m playwright install chromium
 ```
 
-#### Parameters
-* screenshot_path: Path to the screenshot of the webpage.
-* task: Description of the goal to achieve on the webpage.
-* action_description: Initial action to perform.
-* format: Desired output format for webpage state changes:
-  * 'change' for textual descriptions.
-  * 'accessibility' for an accessibility tree structure.
-  * 'html' for HTML structure of the predicted page.
-* k: Number of imagination steps to simulate.
+### Authentication
 
+The agent reads your Anthropic API key in this order:
+1. `ANTHROPIC_API_KEY` environment variable
+2. Claude Code OAuth credentials at `~/.claude/.credentials.json`
 
-### Simulation Scoring
-
-#### Example Code
-```python
-screenshot_path = "demo_data/shopping_0.png"
-screenshots = [Image.open(screenshot_path)]
-actions = ["None"]
-action_description_list = [
-    "type 'red blanket' in the search bar",
-    "click the element Home & Kitchen",
-    "type 'kobe' in the search bar",
-    "type 'the ohio state university' in the search bar"
-]
-task = "Buy the least expensive red blanket (in any size)"
-scores, simulations = evaluate_simulation(
-    screenshots, 
-    actions, 
-    task, 
-    "https://www.amazon.com", 
-    action_description_list, 
-    num_of_sim=3, 
-    num_workers=50, 
-    n=10, 
-    steps=2
-)
+If using an API key directly:
+```bash
+export ANTHROPIC_API_KEY="sk-ant-..."
 ```
 
-#### Parameters
-* screenshots: List of PIL.Image screenshots representing webpage states.
-* actions: List of actions performed by the agent.
-* task: Description of the goal to achieve on the webpage.
-* url: The current webpage URL.
-* action_description_list: List of action descriptions to evaluate.
-* num_of_sim: Number of simulations per action. 
-* steps: Number of imagination steps per simulation. 
-* num_workers: Number of parallel workers for simulations.
+## Usage
 
-### Controller
+### Reactive mode (Claude only, no GPU needed)
 
-#### Example Code
-```python
-screenshot_path = "demo_data/shopping_0.png"
-screenshots = [Image.open(screenshot_path)]
-actions = ["None"]  # previous actions so far
-
-action_description = "type 'red skirt' in the search bar"
-task = "Buy the least expensive red skirt (in any size) on Amazon."
-
-action_description_list = [
-    "type 'red skirt' in the search bar",
-    "click the element Women Clothes",
-    "type 'kobe' in the search bar",
-    "type 'the ohio state university' in the search bar"
-]
-
-random.shuffle(action_description_list)
-selected_actions = select_actions(screenshots, actions, task, "https://www.amazon.com", action_description_list)
-# Map selected indices back to action descriptions
-selected_actions = [action_description_list[int(i)] for i in selected_actions]
+```bash
+python agent.py \
+  --task "Search for red blankets" \
+  --url "https://www.amazon.com" \
+  --max-steps 10
 ```
 
-#### Parameters
-* screenshots: List of PIL.Image screenshots representing webpage states.
-* actions: List of previously executed actions.
-* task: Description of the goal to achieve on the webpage.
-* url: The current webpage URL.
-* action_description_list: List of action descriptions to evaluate.
+### Planning mode (Claude + Dreamer-7B)
 
-### Using Dreamer-7B
-We released Dreamer-7B and its VWA in-domain continue trained variants (https://huggingface.co/osunlp/Dreamer-7B).
-Please note that current Dreamer-7B only supports image (w/ or w/o SoM) observation space.
+```bash
+python agent.py \
+  --task "Find the cheapest noise-cancelling wireless headphones with at least 4 stars, add it to the cart" \
+  --url "https://www.amazon.com" \
+  --max-steps 15 \
+  --planning
+```
 
-## Citation
+### Headless (no visible browser window)
+
+```bash
+python agent.py \
+  --task "Search for red blankets" \
+  --url "https://www.amazon.com" \
+  --max-steps 10 \
+  --headless
 ```
-@article{Gu2025WebDreamer,
-  author    = {Yu Gu and Kai Zhang and Yuting Ning and Boyuan Zheng and Boyu Gou and Tianci Xue and Cheng Chang and Sanjari Srivastava and Yanan Xie and Peng Qi and Huan Sun and Yu Su},
-  title     = {Is Your LLM Secretly a World Model of the Internet? Model-Based Planning for Web Agents},
-  journal   = {Transactions on Machine Learning Research},
-  year      = {2025}
-}
+
+### All flags
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--task` | Task to accomplish (required) | — |
+| `--url` | Starting URL (required) | — |
+| `--max-steps` | Maximum agent steps | 15 |
+| `--headless` | Run browser without a window | off |
+| `--planning` | Enable Dreamer-7B planning pipeline | off |
+
+## How it works
+
+### Reactive mode
 ```
+screenshot + accessibility tree → Claude picks best action → execute in browser → repeat
+```
+
+### Planning mode
+```
+screenshot + accessibility tree
+  → Claude proposes 3-5 candidate actions
+  → Dreamer-7B predicts page state after each action
+  → Claude scores each (action, predicted state) pair
+  → execute the highest-scored action
+  → repeat
+```
+
+## Architecture
+
+| File | Purpose |
+|------|---------|
+| `agent.py` | Main agent loop and CLI |
+| `action_generator.py` | Claude-based action generation (single or multi-candidate) |
+| `planning.py` | Planning pipeline: candidates → Dreamer prediction → Claude scoring |
+| `browser_executor.py` | Playwright browser management, accessibility tree extraction |
+| `dreamer_model.py` | Dreamer-7B world model with 4-bit quantization |
+
+### Original WebDreamer modules (from the paper)
+
+| File | Purpose |
+|------|---------|
+| `world_model.py` | WebWorldModel using GPT-4o/Claude |
+| `simulation_scoring.py` | Simulation-based action scoring |
+| `controller.py` | Action filtering and selection |
+| `llms/` | LLM provider utilities |
+
+## Based on
+
+[WebDreamer: Model-Based Planning for Web Agents](https://arxiv.org/abs/2411.06559) by OSU NLP Group.
+
+This repo extends the original with a working Playwright-based agent that can navigate real websites using Claude for decisions and Dreamer-7B for planning.
