@@ -4,10 +4,32 @@ Handles navigation, screenshots, accessibility tree extraction, and action execu
 """
 
 import re
+import random
 import base64
 from io import BytesIO
 from PIL import Image
 from playwright.sync_api import sync_playwright, Page, Browser, Playwright
+from playwright_stealth import Stealth
+
+USER_AGENTS = {
+    "firefox": [
+        "Mozilla/5.0 (X11; Linux x86_64; rv:137.0) Gecko/20100101 Firefox/137.0",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:136.0) Gecko/20100101 Firefox/136.0",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:135.0) Gecko/20100101 Firefox/135.0",
+        "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:134.0) Gecko/20100101 Firefox/134.0",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0",
+    ],
+    "chromium": [
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+    ],
+    "webkit": [
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Safari/605.1.15",
+    ],
+}
 
 INTERACTIVE_ROLES = {
     "button", "link", "textbox", "checkbox", "radio", "combobox",
@@ -20,11 +42,23 @@ MAX_ELEMENTS = 100
 
 
 class BrowserManager:
-    def __init__(self, headless=False):
+    def __init__(self, headless=False, browser_type="chromium"):
         self._pw: Playwright = sync_playwright().start()
-        self._browser: Browser = self._pw.chromium.launch(headless=headless)
-        self._context = self._browser.new_context(viewport={"width": 1280, "height": 720})
+        engines = {
+            "chromium": self._pw.chromium,
+            "firefox": self._pw.firefox,
+            "webkit": self._pw.webkit,
+        }
+        engine = engines.get(browser_type, self._pw.chromium)
+        self._browser: Browser = engine.launch(headless=headless)
+        self._context = self._browser.new_context(
+            viewport={"width": 1440, "height": 900},
+            device_scale_factor=1,
+            user_agent=random.choice(USER_AGENTS.get(browser_type, USER_AGENTS["firefox"])),
+        )
+        stealth = Stealth()
         self._page: Page = self._context.new_page()
+        stealth.apply_stealth_sync(self._page)
 
     def goto(self, url: str):
         self._page.goto(url, wait_until="domcontentloaded", timeout=30000)
@@ -128,6 +162,12 @@ class BrowserManager:
             return f"pressed {value}"
 
         # Actions that need an element
+        # Resolve placeholder IDs (e.g. "?search_box") by fuzzy matching
+        if isinstance(element_id, str) and element_id.startswith("?"):
+            element_id = self._resolve_placeholder(element_id, id_map)
+            if element_id is None:
+                return f"error: could not resolve placeholder to any element"
+
         if element_id is None or element_id not in id_map:
             return f"error: no valid element for {action_type}"
 
@@ -141,9 +181,9 @@ class BrowserManager:
             elif action_type == "type":
                 locator.click(timeout=5000)
                 locator.fill(value or "", timeout=5000)
-                # Auto-submit search boxes
+                # Auto-submit search/input boxes
                 role, _name = id_map.get(element_id, ("", ""))
-                if role.lower() in ("searchbox", "textbox"):
+                if role.lower() in ("searchbox", "textbox", "combobox"):
                     self._page.keyboard.press("Enter")
             elif action_type == "hover":
                 locator.hover(timeout=5000)
@@ -154,6 +194,44 @@ class BrowserManager:
 
         self._wait()
         return f"executed {action_type} on [{element_id}]"
+
+    def _resolve_placeholder(self, placeholder: str, id_map: dict) -> int | None:
+        """Resolve a placeholder like '?search_box' to a real element ID.
+
+        Asks the LLM to pick the best matching element from the current page.
+        """
+        from llm_call import call_text_llm
+
+        desc = placeholder.lstrip("?").replace("_", " ")
+
+        elements_str = "\n".join(
+            f"[{eid}] {role} \"{name}\"" for eid, (role, name) in id_map.items()
+        )
+
+        system = "You match placeholder element descriptions to real page elements. Reply with ONLY the numeric ID number, nothing else."
+        prompt = f"""The plan references an element called "{desc}".
+
+Here are the actual interactive elements on the current page:
+{elements_str}
+
+Which element ID best matches "{desc}"? Reply with ONLY the number."""
+
+        try:
+            result = call_text_llm(system, prompt, max_tokens=16).strip()
+            # Extract first number from response
+            import re
+            m = re.search(r'\d+', result)
+            if m:
+                eid = int(m.group())
+                if eid in id_map:
+                    role, name = id_map[eid]
+                    print(f"  Resolved [{placeholder}] -> [{eid}] {role} \"{name}\"")
+                    return eid
+        except Exception as e:
+            print(f"  Placeholder resolution error: {e}")
+
+        print(f"  Could not resolve placeholder [{placeholder}]")
+        return None
 
     def _resolve_element(self, element_id: int, id_map: dict):
         """Resolve an element ID to a Playwright locator."""

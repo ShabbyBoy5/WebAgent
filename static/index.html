@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WebAgent Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface2: #1c2128;
+  --border: #30363d;
+  --text: #e6edf3;
+  --text-dim: #8b949e;
+  --accent: #58a6ff;
+  --accent-glow: rgba(88, 166, 255, 0.3);
+  --green: #3fb950;
+  --amber: #d29922;
+  --red: #f85149;
+  --purple: #bc8cff;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.header h1 {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+.header h1 span { color: var(--accent); }
+.status-badge {
+  font-size: 13px;
+  padding: 4px 12px;
+  border-radius: 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  transition: all 0.3s;
+}
+.status-badge.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(88,166,255,0.1);
+}
+.status-badge.done {
+  border-color: var(--green);
+  color: var(--green);
+  background: rgba(63,185,80,0.1);
+}
+.status-badge.error {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+/* Main container */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+/* Search bar */
+.search-wrapper {
+  position: relative;
+  margin-bottom: 20px;
+}
+.search-icon {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-dim);
+  font-size: 18px;
+  pointer-events: none;
+}
+.search-input {
+  width: 100%;
+  padding: 16px 120px 16px 48px;
+  font-size: 16px;
+  font-family: inherit;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.search-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.search-input::placeholder { color: var(--text-dim); }
+.run-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+}
+.run-btn:hover { opacity: 0.9; }
+.run-btn:active { transform: translateY(-50%) scale(0.97); }
+.run-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.stop-btn {
+  background: var(--red);
+}
+
+/* Controls */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 24px;
+}
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.control-group label {
+  font-size: 13px;
+  color: var(--text-dim);
+  font-weight: 500;
+}
+.control-group input[type="text"] {
+  padding: 6px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  outline: none;
+  width: 220px;
+}
+.control-group input:focus { border-color: var(--accent); }
+
+/* Inline stepper */
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.stepper-btn {
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text-dim);
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s, color 0.2s;
+  padding: 0;
+  line-height: 1;
+}
+.stepper-btn:hover { border-color: var(--accent); color: var(--text); }
+.stepper-val {
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+  min-width: 18px;
+  text-align: center;
+  color: var(--text);
+}
+.control-sep {
+  width: 1px;
+  height: 24px;
+  background: var(--border);
+  margin: 0 4px;
+}
+
+/* Model toggle */
+.model-toggle {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.model-toggle input { display: none; }
+.model-toggle label {
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--text-dim);
+  background: var(--bg);
+  transition: all 0.2s;
+  border-right: 1px solid var(--border);
+}
+.model-toggle label:last-of-type { border-right: none; }
+.model-toggle input:checked + label {
+  background: rgba(88,166,255,0.15);
+  color: var(--accent);
+}
+
+/* Results area */
+.results { display: none; }
+.results.visible { display: block; }
+
+/* Section headings */
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title .dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* Plans grid */
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.plan-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.plan-card.best {
+  border-color: var(--accent);
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+.plan-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+}
+.plan-card-header h3 {
+  font-size: 14px;
+  font-weight: 600;
+}
+.best-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--accent);
+  color: #fff;
+  display: none;
+}
+.plan-card.best .best-badge { display: inline-block; }
+.plan-steps {
+  padding: 12px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  min-height: 60px;
+}
+.plan-step {
+  padding: 2px 0;
+  color: var(--text);
+  opacity: 0;
+  animation: fadeIn 0.15s ease forwards;
+}
+@keyframes fadeIn { to { opacity: 1; } }
+.plan-step .step-num {
+  color: var(--text-dim);
+  margin-right: 6px;
+}
+.plan-step .action-type { color: var(--purple); }
+.plan-step .element-id { color: var(--amber); }
+.plan-step .value-str { color: var(--green); }
+.plan-step.typing::after {
+  content: '\2588';
+  color: var(--accent);
+  animation: blink 0.7s step-end infinite;
+}
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* Score section */
+.plan-score {
+  padding: 10px 16px;
+  border-top: 1px solid var(--border);
+  display: none;
+}
+.plan-score.visible { display: block; }
+.score-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.score-bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--bg);
+  overflow: hidden;
+}
+.score-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  width: 0%;
+  transition: width 1s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.score-value {
+  font-size: 14px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  min-width: 36px;
+  text-align: right;
+}
+.score-reasoning {
+  font-size: 12px;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+/* Execution log */
+.exec-section {
+  margin-top: 24px;
+  display: none;
+}
+.exec-section.visible { display: block; }
+.exec-log {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.exec-entry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border);
+  animation: slideIn 0.3s ease;
+}
+.exec-entry:last-child { border-bottom: none; }
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.exec-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.exec-icon.running {
+  border: 2px solid var(--accent);
+  border-top-color: transparent;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.exec-icon.success { background: var(--green); color: #fff; }
+.exec-icon.error { background: var(--red); color: #fff; }
+.exec-icon.blocked { background: var(--amber); color: #fff; }
+.exec-step-num { color: var(--text-dim); min-width: 50px; }
+.exec-action { flex: 1; }
+.exec-status { color: var(--text-dim); font-size: 12px; }
+
+/* Screenshot */
+.screenshot-section {
+  margin-top: 16px;
+  display: none;
+}
+.screenshot-section.visible { display: block; }
+.screenshot-frame {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--surface);
+}
+.screenshot-frame img {
+  width: 100%;
+  display: block;
+}
+
+/* Status message */
+.status-message {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-dim);
+  font-size: 15px;
+}
+.status-message .spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 16px;
+}
+.dots::after {
+  content: '';
+  animation: dots 1.5s steps(4, end) infinite;
+}
+@keyframes dots {
+  0% { content: ''; }
+  25% { content: '.'; }
+  50% { content: '..'; }
+  75% { content: '...'; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1><span>Web</span>Agent</h1>
+  <div class="status-badge" id="statusBadge">Idle</div>
+</div>
+
+<div class="container">
+  <!-- Search bar -->
+  <div class="search-wrapper">
+    <div class="search-icon">&#x1F50D;</div>
+    <input type="text" class="search-input" id="taskInput"
+           placeholder="Enter your task... e.g. find headphones on amazon from sony">
+    <button class="run-btn" id="runBtn" onclick="startAgent()">Run &#9654;</button>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="control-group">
+      <label>URL</label>
+      <input type="text" id="urlInput" value="https://duckduckgo.com">
+    </div>
+
+    <div class="control-sep"></div>
+
+    <div class="control-group">
+      <label>Mode</label>
+      <div class="model-toggle">
+        <input type="radio" name="mode" id="modeReactive" value="reactive">
+        <label for="modeReactive">Reactive</label>
+        <input type="radio" name="mode" id="modePlanFirst" value="plan-first" checked>
+        <label for="modePlanFirst">Plan-First</label>
+      </div>
+    </div>
+
+    <div class="control-sep"></div>
+
+    <div class="control-group">
+      <label>World Model</label>
+      <div class="model-toggle">
+        <input type="radio" name="model" id="modelDreamer" value="dreamer">
+        <label for="modelDreamer">Dreamer-7B</label>
+        <input type="radio" name="model" id="modelClaude" value="claude" checked>
+        <label for="modelClaude">Claude Opus</label>
+      </div>
+    </div>
+
+    <div class="control-sep"></div>
+
+    <div class="control-group" id="plansControl">
+      <label>Plans</label>
+      <div class="stepper">
+        <button class="stepper-btn" onclick="stepVal('numPlans',-1)">-</button>
+        <span class="stepper-val" id="numPlans">3</span>
+        <button class="stepper-btn" onclick="stepVal('numPlans',1)">+</button>
+      </div>
+    </div>
+
+    <div class="control-group" id="stepsControl">
+      <label>Min Steps</label>
+      <div class="stepper">
+        <button class="stepper-btn" onclick="stepVal('minSteps',-1)">-</button>
+        <span class="stepper-val" id="minSteps">0</span>
+        <button class="stepper-btn" onclick="stepVal('minSteps',1)">+</button>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label>Max Steps</label>
+      <div class="stepper">
+        <button class="stepper-btn" onclick="stepVal('maxSteps',-1)">-</button>
+        <span class="stepper-val" id="maxSteps">15</span>
+        <button class="stepper-btn" onclick="stepVal('maxSteps',1)">+</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div class="results" id="results">
+    <!-- Status -->
+    <div class="status-message" id="statusArea">
+      <div class="spinner"></div>
+      <span id="statusText">Starting agent<span class="dots"></span></span>
+    </div>
+
+    <!-- Plans -->
+    <div id="plansSection" style="display:none">
+      <div class="section-title">
+        <span class="dot" id="plansDot"></span>
+        <span id="plansTitle">Generating Plans</span>
+      </div>
+      <div class="plans-grid" id="plansGrid"></div>
+    </div>
+
+    <!-- Execution -->
+    <div class="exec-section" id="execSection">
+      <div class="section-title">
+        <span class="dot"></span>
+        Executing Best Plan
+      </div>
+      <div class="exec-log" id="execLog"></div>
+    </div>
+
+    <!-- Screenshot -->
+    <div class="screenshot-section" id="screenshotSection">
+      <div class="section-title">Browser View</div>
+      <div class="screenshot-frame">
+        <img id="screenshotImg" src="" alt="Browser screenshot">
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let sessionId = null;
+let eventSource = null;
+let planCards = {};
+let typeQueues = {};
+
+// Stepper limits
+const STEPPER_LIMITS = {
+  numPlans: [1, 5],
+  minSteps: [0, 20],
+  maxSteps: [1, 50],
+};
+
+function stepVal(id, delta) {
+  const el = document.getElementById(id);
+  const [min, max] = STEPPER_LIMITS[id] || [0, 99];
+  const cur = parseInt(el.textContent);
+  el.textContent = Math.max(min, Math.min(max, cur + delta));
+}
+
+// Toggle plan-first controls visibility based on mode
+document.querySelectorAll('input[name="mode"]').forEach(r => {
+  r.addEventListener('change', () => {
+    const isPlanFirst = document.getElementById('modePlanFirst').checked;
+    document.getElementById('plansControl').style.display = isPlanFirst ? '' : 'none';
+    document.getElementById('stepsControl').style.display = isPlanFirst ? '' : 'none';
+  });
+});
+
+function startAgent() {
+  const task = document.getElementById('taskInput').value.trim();
+  if (!task) return;
+
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true;
+  btn.innerHTML = 'Stop &#9632;';
+  btn.className = 'run-btn stop-btn';
+  btn.onclick = stopAgent;
+  btn.disabled = false;
+
+  // Reset UI
+  document.getElementById('results').classList.add('visible');
+  document.getElementById('statusArea').style.display = 'block';
+  document.getElementById('plansSection').style.display = 'none';
+  document.getElementById('execSection').classList.remove('visible');
+  document.getElementById('screenshotSection').classList.remove('visible');
+  document.getElementById('plansGrid').innerHTML = '';
+  document.getElementById('execLog').innerHTML = '';
+  planCards = {};
+  typeQueues = {};
+
+  setBadge('Starting...', 'active');
+  setStatus('Starting agent');
+
+  const model = document.querySelector('input[name="model"]:checked').value;
+  const mode = document.querySelector('input[name="mode"]:checked').value;
+
+  fetch('/api/run', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      task: task,
+      start_url: document.getElementById('urlInput').value,
+      model: model,
+      mode: mode,
+      num_plans: parseInt(document.getElementById('numPlans').textContent),
+      min_steps: parseInt(document.getElementById('minSteps').textContent),
+      max_steps: parseInt(document.getElementById('maxSteps').textContent),
+    })
+  })
+  .then(r => {
+    if (r.status === 409) throw new Error('An agent is already running.');
+    return r.json();
+  })
+  .then(data => {
+    sessionId = data.session_id;
+    connectSSE(sessionId);
+  })
+  .catch(err => {
+    setBadge('Error', 'error');
+    setStatus(err.message);
+    resetBtn();
+  });
+}
+
+function stopAgent() {
+  if (sessionId) {
+    fetch(`/api/stop/${sessionId}`, {method: 'POST'});
+  }
+}
+
+function resetBtn() {
+  const btn = document.getElementById('runBtn');
+  btn.innerHTML = 'Run &#9654;';
+  btn.className = 'run-btn';
+  btn.onclick = startAgent;
+  btn.disabled = false;
+}
+
+function connectSSE(sid) {
+  eventSource = new EventSource(`/api/events/${sid}`);
+  eventSource.onmessage = (e) => {
+    const event = JSON.parse(e.data);
+    handleEvent(event);
+  };
+  eventSource.onerror = () => {
+    eventSource.close();
+    eventSource = null;
+  };
+}
+
+function handleEvent(ev) {
+  switch (ev.type) {
+    case 'status':
+      setStatus(ev.message);
+      if (ev.phase === 'planning') setBadge('Planning', 'active');
+      if (ev.phase === 'scoring') setBadge('Scoring', 'active');
+      if (ev.phase === 'executing') setBadge('Executing', 'active');
+      if (ev.phase === 'done') { setBadge('Done', 'done'); document.getElementById('statusArea').style.display = 'none'; }
+      break;
+
+    case 'plan_step':
+      showPlanStep(ev.plan_index, ev.step_index, ev.raw, ev.action_type);
+      break;
+
+    case 'plan_complete':
+      // Plan generation done for this plan
+      break;
+
+    case 'all_plans_complete':
+      document.getElementById('plansTitle').textContent = `Plans Generated (${ev.count})`;
+      document.getElementById('plansDot').style.animationPlayState = 'paused';
+      break;
+
+    case 'dreamer_predict':
+      // Could show prediction tooltip on plan card
+      break;
+
+    case 'plan_score':
+      showScore(ev.plan_index, ev.score, ev.reasoning);
+      break;
+
+    case 'best_plan':
+      markBestPlan(ev.plan_index);
+      break;
+
+    case 'sentinel_block':
+      if (ev.step !== undefined) {
+        addExecEntry(ev.step, ev.action, 'blocked', `Blocked: ${ev.explanation}`);
+      }
+      break;
+
+    case 'execution_start':
+      document.getElementById('statusArea').style.display = 'none';
+      document.getElementById('execSection').classList.add('visible');
+      break;
+
+    case 'exec_step':
+      if (ev.status === 'running') {
+        addExecEntry(ev.step, ev.raw, 'running', '');
+      }
+      break;
+
+    case 'exec_result':
+      updateExecEntry(ev.step, ev.status);
+      break;
+
+    case 'screenshot':
+      document.getElementById('screenshotSection').classList.add('visible');
+      document.getElementById('screenshotImg').src = ev.data;
+      break;
+
+    case 'reflexion':
+      // Could show inline
+      break;
+
+    case 'done':
+      setBadge('Done', 'done');
+      setStatus(ev.message);
+      document.getElementById('statusArea').style.display = 'none';
+      resetBtn();
+      if (eventSource) { eventSource.close(); eventSource = null; }
+      break;
+
+    case 'error':
+      setBadge('Error', 'error');
+      setStatus(ev.message);
+      resetBtn();
+      if (eventSource) { eventSource.close(); eventSource = null; }
+      break;
+  }
+}
+
+// --- UI Helpers ---
+
+function setBadge(text, cls) {
+  const badge = document.getElementById('statusBadge');
+  badge.textContent = text;
+  badge.className = 'status-badge ' + (cls || '');
+}
+
+function setStatus(msg) {
+  document.getElementById('statusText').innerHTML = msg + '<span class="dots"></span>';
+}
+
+function getOrCreatePlanCard(planIndex) {
+  if (planCards[planIndex]) return planCards[planIndex];
+
+  const section = document.getElementById('plansSection');
+  section.style.display = 'block';
+
+  const card = document.createElement('div');
+  card.className = 'plan-card';
+  card.id = `plan-${planIndex}`;
+  card.innerHTML = `
+    <div class="plan-card-header">
+      <h3>Plan ${planIndex + 1}</h3>
+      <span class="best-badge">BEST</span>
+    </div>
+    <div class="plan-steps" id="plan-steps-${planIndex}"></div>
+    <div class="plan-score" id="plan-score-${planIndex}">
+      <div class="score-row">
+        <div class="score-bar"><div class="score-bar-fill" id="score-fill-${planIndex}"></div></div>
+        <div class="score-value" id="score-val-${planIndex}">--</div>
+      </div>
+      <div class="score-reasoning" id="score-reason-${planIndex}"></div>
+    </div>
+  `;
+  document.getElementById('plansGrid').appendChild(card);
+  planCards[planIndex] = card;
+  typeQueues[planIndex] = Promise.resolve();
+  return card;
+}
+
+function showPlanStep(planIndex, stepIndex, raw, actionType) {
+  getOrCreatePlanCard(planIndex);
+  const container = document.getElementById(`plan-steps-${planIndex}`);
+
+  const stepEl = document.createElement('div');
+  stepEl.className = 'plan-step';
+  stepEl.id = `step-${planIndex}-${stepIndex}`;
+  container.appendChild(stepEl);
+
+  // Queue typing animation
+  typeQueues[planIndex] = typeQueues[planIndex].then(() => {
+    return typeText(stepEl, stepIndex, raw, actionType);
+  });
+}
+
+function typeText(element, stepIndex, raw, actionType) {
+  return new Promise(resolve => {
+    const fullText = `${stepIndex + 1}. ${raw}`;
+    element.classList.add('typing');
+    let i = 0;
+    const speed = 20;
+    const interval = setInterval(() => {
+      element.textContent = fullText.substring(0, i + 1);
+      i++;
+      if (i >= fullText.length) {
+        clearInterval(interval);
+        element.classList.remove('typing');
+        // Syntax highlight after typing
+        element.innerHTML = highlightAction(stepIndex + 1, raw);
+        setTimeout(resolve, 80);
+      }
+    }, speed);
+  });
+}
+
+function highlightAction(num, raw) {
+  let html = `<span class="step-num">${num}.</span> `;
+  // Highlight action type
+  raw = raw.replace(/^(type|click|scroll\s+\w+|press|go_back|hover|stop)/i, '<span class="action-type">$1</span>');
+  // Highlight element IDs
+  raw = raw.replace(/\[(\??\w+)\]/g, '<span class="element-id">[$1]</span>');
+  // Highlight quoted strings
+  raw = raw.replace(/"([^"]*)"/g, '<span class="value-str">"$1"</span>');
+  return html + raw;
+}
+
+function showScore(planIndex, score, reasoning) {
+  getOrCreatePlanCard(planIndex);
+  const scoreSection = document.getElementById(`plan-score-${planIndex}`);
+  scoreSection.classList.add('visible');
+
+  const fill = document.getElementById(`score-fill-${planIndex}`);
+  const val = document.getElementById(`score-val-${planIndex}`);
+  const reason = document.getElementById(`score-reason-${planIndex}`);
+
+  // Color based on score
+  let color = 'var(--red)';
+  if (score >= 0.7) color = 'var(--green)';
+  else if (score >= 0.4) color = 'var(--amber)';
+
+  fill.style.background = color;
+  val.style.color = color;
+  val.textContent = score.toFixed(2);
+  reason.textContent = reasoning;
+
+  // Animate bar
+  requestAnimationFrame(() => {
+    fill.style.width = (score * 100) + '%';
+  });
+}
+
+function markBestPlan(planIndex) {
+  const card = planCards[planIndex];
+  if (card) card.classList.add('best');
+}
+
+function addExecEntry(step, action, status, detail) {
+  const log = document.getElementById('execLog');
+  const existing = document.getElementById(`exec-${step}`);
+  if (existing) return; // Already added
+
+  const entry = document.createElement('div');
+  entry.className = 'exec-entry';
+  entry.id = `exec-${step}`;
+
+  let iconHtml = '';
+  if (status === 'running') iconHtml = '<div class="exec-icon running"></div>';
+  else if (status === 'success') iconHtml = '<div class="exec-icon success">&#10003;</div>';
+  else if (status === 'error') iconHtml = '<div class="exec-icon error">&#10007;</div>';
+  else if (status === 'blocked') iconHtml = '<div class="exec-icon blocked">!</div>';
+
+  entry.innerHTML = `
+    ${iconHtml}
+    <span class="exec-step-num">Step ${step + 1}</span>
+    <span class="exec-action">${escapeHtml(action)}</span>
+    <span class="exec-status">${escapeHtml(detail)}</span>
+  `;
+  log.appendChild(entry);
+}
+
+function updateExecEntry(step, status) {
+  const entry = document.getElementById(`exec-${step}`);
+  if (!entry) return;
+
+  const icon = entry.querySelector('.exec-icon');
+  if (!icon) return;
+
+  icon.className = 'exec-icon';
+  if (status === 'stopped' || (!status.startsWith('error') && status !== 'blocked')) {
+    icon.classList.add('success');
+    icon.innerHTML = '&#10003;';
+  } else if (status.startsWith('error')) {
+    icon.classList.add('error');
+    icon.innerHTML = '&#10007;';
+  }
+
+  const statusEl = entry.querySelector('.exec-status');
+  if (statusEl) statusEl.textContent = status;
+}
+
+function escapeHtml(s) {
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+// Enter key to run
+document.getElementById('taskInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') startAgent();
+});
+</script>
+</body>
+</html>

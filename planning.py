@@ -1,11 +1,33 @@
 """
-Planning pipeline: generate candidates -> predict outcomes with Dreamer-7B -> score with Claude.
+Planning pipeline: generate candidates -> predict outcomes with Dreamer-7B ->
+[sentinel filter] -> score with Claude.
 """
 
 import re
 from concurrent.futures import ThreadPoolExecutor
 
-from action_generator import generate_candidates, _get_client
+from action_generator import generate_candidates, generate_full_plans
+from llm_call import call_text_llm
+
+
+PLAN_SCORING_PROMPT = """You are evaluating a complete web navigation plan.
+Given the task, the starting page's interactive elements, and a proposed
+multi-step plan, rate how likely this plan will successfully complete the task.
+
+IMPORTANT context about how the executor works:
+- "type [id] text" automatically presses Enter after typing. This means typing in a search box submits the search. There is NO need for a separate click on a search button — do NOT penalize plans for missing a search button click.
+- Placeholder IDs like [?first_result] or [?search_box] are VALID. The executor resolves them at runtime by matching the description to real elements on the loaded page. Do NOT penalize plans for using placeholders — they are expected for future pages the plan hasn't seen yet.
+- Only the first step needs to reference a real [id] from the current page. All later steps can and should use placeholders.
+
+Consider:
+- Does the plan cover all necessary steps to complete the task?
+- Are the actions logical and in the right order?
+- Does the first action correctly reference an element on the current page?
+- Is the plan efficient?
+
+Reply with EXACTLY two lines:
+Reasoning: <brief explanation of strengths/weaknesses>
+Score: <float between 0.0 and 1.0>"""
 
 
 SCORING_PROMPT = """You are evaluating a proposed web navigation action.
@@ -27,7 +49,6 @@ def _action_to_description(action: dict, accessibility_tree: str) -> str:
     if atype in ("scroll down", "scroll up", "go_back", "stop"):
         return atype
 
-    # Look up element name from the accessibility tree
     element_desc = ""
     if eid is not None:
         for line in accessibility_tree.split("\n"):
@@ -70,17 +91,10 @@ Predicted page state after this action:
 Rate this action."""
 
     try:
-        resp = _get_client().messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=128,
-            system=SCORING_PROMPT,
-            messages=[{"role": "user", "content": user_prompt}],
-        )
-        text = resp.content[0].text.strip()
+        text = call_text_llm(SCORING_PROMPT, user_prompt, max_tokens=128)
         m = re.search(r'Score:\s*([\d.]+)', text)
         if m:
             score = float(m.group(1))
-            # Extract reasoning for logging
             r = re.search(r'Reasoning:\s*(.+)', text)
             reasoning = r.group(1).strip() if r else ""
             print(f"    Score {score:.2f} — {reasoning}")
@@ -97,6 +111,9 @@ def plan_best_action(
     accessibility_tree: str,
     dreamer,
     current_url: str,
+    sentinel_enabled: bool = False,
+    corrective_rules: list[str] | None = None,
+    session_context: str = "",
 ) -> list[dict]:
     """Generate candidates, predict outcomes with Dreamer-7B, score with Claude.
 
@@ -104,7 +121,8 @@ def plan_best_action(
     """
     # Step 1: Generate 3-5 candidates from Claude
     candidates = generate_candidates(
-        screenshot_b64, task, action_history, accessibility_tree, multi=True
+        screenshot_b64, task, action_history, accessibility_tree,
+        multi=True, session_context=session_context,
     )
 
     if not candidates:
@@ -137,7 +155,18 @@ def plan_best_action(
                 print(f"    Dreamer error: {e}")
                 pred = "(prediction failed)"
         predictions.append(pred)
+        cand["_prediction"] = pred
         print(f"    Predicted: {pred[:120]}...")
+
+    # Step 2.5: Sentinel safety filter (if enabled)
+    if sentinel_enabled:
+        from sentinel import filter_unsafe_candidates
+        candidates, predictions, verdicts = filter_unsafe_candidates(
+            candidates, predictions, current_url, corrective_rules
+        )
+        if not candidates:
+            print("  SENTINEL: All candidates blocked as unsafe!")
+            return []
 
     # Step 3: Score each candidate with Claude (in parallel)
     def score_fn(idx):
@@ -161,3 +190,166 @@ def plan_best_action(
         print(f"    {c['_score']:.2f}  {c['raw']}")
 
     return candidates
+
+
+def _score_plan(task: str, accessibility_tree: str, plan: list[dict],
+                dreamer_prediction: str | None = None,
+                plan_index: int = 0, event_callback=None) -> float:
+    """Score a complete action plan using Claude."""
+    steps_str = "\n".join(
+        f"  {i+1}. {a['raw']}" for i, a in enumerate(plan)
+    )
+
+    tree_display = accessibility_tree
+    if len(tree_display) > 3000:
+        tree_display = tree_display[:3000] + "\n... (truncated)"
+
+    prediction_block = ""
+    if dreamer_prediction:
+        prediction_block = f"\nDreamer world-model prediction for step 1:\n{dreamer_prediction}\n"
+
+    user_prompt = f"""Task: {task}
+
+Current page interactive elements:
+{tree_display}
+
+Proposed plan:
+{steps_str}
+{prediction_block}
+Rate this plan."""
+
+    try:
+        text = call_text_llm(PLAN_SCORING_PROMPT, user_prompt, max_tokens=256)
+        m = re.search(r'Score:\s*([\d.]+)', text)
+        if m:
+            score = float(m.group(1))
+            r = re.search(r'Reasoning:\s*(.+)', text)
+            reasoning = r.group(1).strip() if r else ""
+            print(f"    Score {score:.2f} — {reasoning}")
+            if event_callback:
+                event_callback("plan_score", {
+                    "plan_index": plan_index,
+                    "score": min(max(score, 0.0), 1.0),
+                    "reasoning": reasoning,
+                })
+            return min(max(score, 0.0), 1.0)
+    except Exception as e:
+        print(f"    Plan scoring error: {e}")
+    return 0.0
+
+
+def select_best_plan(
+    screenshot_b64: str,
+    task: str,
+    accessibility_tree: str,
+    dreamer=None,
+    current_url: str = "",
+    num_plans: int = 3,
+    min_steps: int = 0,
+    session_context: str = "",
+    event_callback=None,
+) -> list[dict]:
+    """Generate multiple complete plans, score them, return the best one.
+
+    Uses Dreamer to predict the first step's outcome for each plan,
+    and Sentinel to filter unsafe plans.
+
+    Returns the best plan as a list of action dicts (ordered steps).
+    """
+    # Step 1: Generate N complete plans
+    plans = generate_full_plans(
+        screenshot_b64, task, accessibility_tree,
+        num_plans=num_plans, min_steps=min_steps, session_context=session_context,
+        event_callback=event_callback,
+    )
+
+    if not plans:
+        return []
+
+    if len(plans) == 1:
+        print("  Only 1 plan generated — using it directly.")
+        return plans[0]
+
+    # Step 2: Dreamer predictions for each plan's first step
+    if event_callback:
+        event_callback("status", {"message": "Running world model predictions..."})
+    dreamer_predictions = []
+    for i, plan in enumerate(plans):
+        first_action = plan[0]
+        desc = _action_to_description(first_action, accessibility_tree)
+        pred = None
+        if dreamer and first_action["action_type"] not in ("scroll down", "scroll up", "stop"):
+            try:
+                print(f"  [Plan {i+1}] Dreamer predicting step 1: {desc}")
+                pred = dreamer.state_change_prediction_in_website(
+                    screenshot_b64, task, desc, format="change"
+                )
+                print(f"    Predicted: {pred[:120]}...")
+                if event_callback:
+                    event_callback("dreamer_predict", {
+                        "plan_index": i,
+                        "prediction": pred[:200],
+                    })
+            except Exception as e:
+                print(f"    Dreamer error: {e}")
+        dreamer_predictions.append(pred)
+
+    # Step 3: Sentinel safety filter on first actions
+    from sentinel import evaluate_candidate
+    safe_plans = []
+    safe_predictions = []
+    safe_original_indices = []
+    for i, (plan, pred) in enumerate(zip(plans, dreamer_predictions)):
+        first_desc = _action_to_description(plan[0], accessibility_tree)
+        verdict = evaluate_candidate(first_desc, pred, current_url)
+        if verdict.is_safe:
+            safe_plans.append(plan)
+            safe_predictions.append(pred)
+            safe_original_indices.append(i)
+        else:
+            print(f"  SENTINEL blocked Plan {i+1}: {verdict.risk_type} — {verdict.explanation}")
+            if event_callback:
+                event_callback("sentinel_block", {
+                    "plan_index": i,
+                    "risk_type": verdict.risk_type,
+                    "explanation": verdict.explanation,
+                })
+
+    if not safe_plans:
+        print("  SENTINEL: All plans blocked! Falling back to all plans.")
+        safe_plans = plans
+        safe_predictions = dreamer_predictions
+        safe_original_indices = list(range(len(plans)))
+
+    # Step 4: Score each safe plan (in parallel)
+    if event_callback:
+        event_callback("status", {"message": f"Scoring {len(safe_plans)} plans..."})
+    print(f"  Scoring {len(safe_plans)} plans...")
+
+    def score_fn(idx):
+        print(f"  [Plan {idx+1}] Scoring ({len(safe_plans[idx])} steps)...")
+        return _score_plan(
+            task, accessibility_tree, safe_plans[idx], safe_predictions[idx],
+            plan_index=safe_original_indices[idx], event_callback=event_callback,
+        )
+
+    with ThreadPoolExecutor(max_workers=5) as pool:
+        scores = list(pool.map(score_fn, range(len(safe_plans))))
+
+    # Step 5: Pick the best
+    best_idx = max(range(len(safe_plans)), key=lambda i: scores[i])
+    print(f"\n  Plan scores:")
+    for i, (plan, score) in enumerate(zip(safe_plans, scores)):
+        marker = " <-- BEST" if i == best_idx else ""
+        steps_preview = " -> ".join(a["raw"] for a in plan[:4])
+        if len(plan) > 4:
+            steps_preview += f" -> ... ({len(plan)} steps total)"
+        print(f"    Plan {i+1}: {score:.2f}  {steps_preview}{marker}")
+
+    if event_callback:
+        event_callback("best_plan", {
+            "plan_index": safe_original_indices[best_idx],
+            "score": scores[best_idx],
+        })
+
+    return safe_plans[best_idx]
