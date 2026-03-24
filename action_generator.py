@@ -78,7 +78,7 @@ CRITICAL — how "type" works:
 
 Important rules:
 - For Phase 1: use the exact [id] numbers from the interactive elements list below
-- For Phase 2+: you cannot see those pages yet, so use descriptive placeholder IDs like [?first_result], [?add_to_cart], [?sony_headphones], etc. The executor will fuzzy-match these to real elements when the page loads
+- For Phase 2+: you cannot see those pages yet, so use placeholder IDs with words that will likely appear in the element's actual text on the page. Good: [?search_box], [?sort_by_dropdown], [?first_product], [?amazon_link]. Bad: [?highest_rated_cookbook] (too abstract — the element text will be a book title, not "highest rated cookbook"). Use ordinals like [?first_result] when you want the Nth matching element
 - Every plan MUST end with "stop" as the final action{min_steps_rule}
 - Do NOT skip steps — include every click, every type, every scroll needed
 - Do NOT explain or comment — output ONLY the numbered action lines

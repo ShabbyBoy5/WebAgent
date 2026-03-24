@@ -1,13 +1,17 @@
 """
 Planning pipeline: generate candidates -> predict outcomes with Dreamer-7B ->
-[sentinel filter] -> score with Claude.
+[sentinel filter] -> score with a selectable dashboard scorer.
 """
 
 import re
 from concurrent.futures import ThreadPoolExecutor
 
 from action_generator import generate_candidates, generate_full_plans
-from llm_call import call_text_llm
+from llm_call import (
+    call_text_llm,
+    SCORING_MODEL_CLAUDE_OPUS,
+    SCORING_MODEL_CODEX_SUBSCRIPTION,
+)
 
 
 PLAN_SCORING_PROMPT = """You are evaluating a complete web navigation plan.
@@ -72,8 +76,9 @@ def _action_to_description(action: dict, accessibility_tree: str) -> str:
 
 
 def _score_candidate(task: str, action_history: list[str],
-                     action_desc: str, predicted_state: str) -> float:
-    """Score a single candidate action using Claude."""
+                     action_desc: str, predicted_state: str,
+                     scoring_model: str = SCORING_MODEL_CLAUDE_OPUS) -> float:
+    """Score a single candidate action using the configured scorer."""
     history_str = "\n".join(
         f"  {i+1}. {a}" for i, a in enumerate(action_history)
     ) if action_history else "  (none)"
@@ -91,7 +96,12 @@ Predicted page state after this action:
 Rate this action."""
 
     try:
-        text = call_text_llm(SCORING_PROMPT, user_prompt, max_tokens=128)
+        text = call_text_llm(
+            SCORING_PROMPT,
+            user_prompt,
+            max_tokens=128,
+            provider=scoring_model,
+        )
         m = re.search(r'Score:\s*([\d.]+)', text)
         if m:
             score = float(m.group(1))
@@ -194,8 +204,9 @@ def plan_best_action(
 
 def _score_plan(task: str, accessibility_tree: str, plan: list[dict],
                 dreamer_prediction: str | None = None,
-                plan_index: int = 0, event_callback=None) -> float:
-    """Score a complete action plan using Claude."""
+                plan_index: int = 0, event_callback=None,
+                scoring_model: str = SCORING_MODEL_CLAUDE_OPUS) -> float:
+    """Score a complete action plan using the configured scorer."""
     steps_str = "\n".join(
         f"  {i+1}. {a['raw']}" for i, a in enumerate(plan)
     )
@@ -219,7 +230,12 @@ Proposed plan:
 Rate this plan."""
 
     try:
-        text = call_text_llm(PLAN_SCORING_PROMPT, user_prompt, max_tokens=256)
+        text = call_text_llm(
+            PLAN_SCORING_PROMPT,
+            user_prompt,
+            max_tokens=256,
+            provider=scoring_model,
+        )
         m = re.search(r'Score:\s*([\d.]+)', text)
         if m:
             score = float(m.group(1))
@@ -246,6 +262,7 @@ def select_best_plan(
     current_url: str = "",
     num_plans: int = 3,
     min_steps: int = 0,
+    scoring_model: str = SCORING_MODEL_CLAUDE_OPUS,
     session_context: str = "",
     event_callback=None,
 ) -> list[dict]:
@@ -330,10 +347,13 @@ def select_best_plan(
         print(f"  [Plan {idx+1}] Scoring ({len(safe_plans[idx])} steps)...")
         return _score_plan(
             task, accessibility_tree, safe_plans[idx], safe_predictions[idx],
-            plan_index=safe_original_indices[idx], event_callback=event_callback,
+            plan_index=safe_original_indices[idx],
+            event_callback=event_callback,
+            scoring_model=scoring_model,
         )
 
-    with ThreadPoolExecutor(max_workers=5) as pool:
+    max_workers = 1 if scoring_model == SCORING_MODEL_CODEX_SUBSCRIPTION else 5
+    with ThreadPoolExecutor(max_workers=max_workers) as pool:
         scores = list(pool.map(score_fn, range(len(safe_plans))))
 
     # Step 5: Pick the best
@@ -352,4 +372,25 @@ def select_best_plan(
             "score": scores[best_idx],
         })
 
-    return safe_plans[best_idx]
+    best_plan = safe_plans[best_idx]
+
+    # Step 6: Predict ALL steps of the best plan with Dreamer (for Reflexion during execution)
+    if dreamer:
+        if event_callback:
+            event_callback("status", {"message": "Predicting all plan steps with Dreamer..."})
+        print(f"  Predicting all {len(best_plan)} steps of best plan...")
+        for j, action in enumerate(best_plan):
+            if action["action_type"] in ("scroll down", "scroll up", "stop"):
+                continue
+            desc = _action_to_description(action, accessibility_tree)
+            try:
+                pred = dreamer.state_change_prediction_in_website(
+                    screenshot_b64, task, desc, format="change"
+                )
+                action["_prediction"] = pred
+                action["_description"] = desc
+                print(f"    Step {j+1}: {pred[:100]}...")
+            except Exception as e:
+                print(f"    Step {j+1} prediction error: {e}")
+
+    return best_plan

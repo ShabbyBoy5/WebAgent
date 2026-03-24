@@ -162,16 +162,25 @@ class BrowserManager:
             return f"pressed {value}"
 
         # Actions that need an element
-        # Resolve placeholder IDs (e.g. "?search_box") by fuzzy matching
+        # Resolve placeholder IDs (e.g. "?search_box") by matching against live tree
         if isinstance(element_id, str) and element_id.startswith("?"):
-            element_id = self._resolve_placeholder(element_id, id_map)
+            # Wait for page to settle — we likely just navigated
+            self._page.wait_for_timeout(2000)
+            try:
+                self._page.wait_for_load_state("networkidle", timeout=5000)
+            except Exception:
+                pass
+            _, id_map = self.get_accessibility_tree()
+            print(f"  Placeholder step: re-read tree, {len(id_map)} elements")
+
+            element_id = self._resolve_placeholder(element_id, id_map, action_type)
             if element_id is None:
                 return f"error: could not resolve placeholder to any element"
 
         if element_id is None or element_id not in id_map:
             return f"error: no valid element for {action_type}"
 
-        locator = self._resolve_element(element_id, id_map)
+        locator = self._resolve_element(element_id, id_map, action_type)
         if locator is None:
             return f"error: could not find element [{element_id}]"
 
@@ -195,12 +204,15 @@ class BrowserManager:
         self._wait()
         return f"executed {action_type} on [{element_id}]"
 
-    def _resolve_placeholder(self, placeholder: str, id_map: dict) -> int | None:
-        """Resolve a placeholder like '?search_box' to a real element ID.
+    def _resolve_placeholder(self, placeholder: str, id_map: dict,
+                             action_type: str = "click") -> int | None:
+        """Resolve a placeholder like '?amazon_home_link' to a real element ID.
 
-        Asks the LLM to pick the best matching element from the current page.
+        Uses the LLM to pick the best element from the current page's
+        accessibility tree given the placeholder description and action type.
         """
         from llm_call import call_text_llm
+        import re as _re
 
         desc = placeholder.lstrip("?").replace("_", " ")
 
@@ -208,49 +220,105 @@ class BrowserManager:
             f"[{eid}] {role} \"{name}\"" for eid, (role, name) in id_map.items()
         )
 
-        system = "You match placeholder element descriptions to real page elements. Reply with ONLY the numeric ID number, nothing else."
-        prompt = f"""The plan references an element called "{desc}".
+        prompt = f"""You are resolving a placeholder element reference to a real element on a webpage.
 
-Here are the actual interactive elements on the current page:
+Action to perform: {action_type}
+Placeholder description: "{desc}"
+
+Interactive elements currently on the page:
 {elements_str}
 
-Which element ID best matches "{desc}"? Reply with ONLY the number."""
+RULES:
+- You MUST pick exactly one element ID. Never refuse or explain.
+- Pick the CLOSEST match even if it's not perfect (e.g. "price filter" -> a sort dropdown, "search box" -> any text input).
+- For "type" actions, pick an input/textbox/searchbox/combobox element.
+- For "click" actions, pick a link or button.
+- Output ONLY the numeric ID, nothing else. No words, no explanation."""
 
         try:
-            result = call_text_llm(system, prompt, max_tokens=16).strip()
-            # Extract first number from response
-            import re
-            m = re.search(r'\d+', result)
+            result = call_text_llm(
+                "You match placeholder descriptions to real page elements. You MUST always output exactly one numeric ID. Never refuse. Never explain.",
+                prompt,
+                max_tokens=8,
+            ).strip()
+            m = _re.search(r'\d+', result)
             if m:
                 eid = int(m.group())
                 if eid in id_map:
                     role, name = id_map[eid]
                     print(f"  Resolved [{placeholder}] -> [{eid}] {role} \"{name}\"")
                     return eid
+                else:
+                    print(f"  LLM returned [{eid}] but it's not in the id_map")
         except Exception as e:
             print(f"  Placeholder resolution error: {e}")
 
-        print(f"  Could not resolve placeholder [{placeholder}]")
+        print(f"  Could not resolve placeholder [{placeholder}] — no match in {len(id_map)} elements")
         return None
 
-    def _resolve_element(self, element_id: int, id_map: dict):
-        """Resolve an element ID to a Playwright locator."""
+    def _resolve_element(self, element_id: int, id_map: dict,
+                          action_type: str = "click"):
+        """Resolve an element ID to a Playwright locator.
+
+        Uses multiple Playwright strategies in order of specificity:
+        1. get_by_role (standard)
+        2. get_by_placeholder (for type actions on search/input fields)
+        3. get_by_label (for labeled inputs)
+        4. get_by_text (fallback for links/buttons)
+        5. CSS locator with visible filter
+        """
         role, name = id_map[element_id]
+
+        # Strategy 1: get_by_role (standard approach)
         try:
             locator = self._page.get_by_role(role, name=name).first
-            if locator.count() > 0:
+            if locator.count() > 0 and locator.is_visible():
                 return locator
         except Exception:
             pass
 
-        # Fallback: try by text
-        if name:
+        # Strategy 2: for type actions, try get_by_placeholder
+        if action_type == "type" and name:
+            for term in [name, name.split("…")[0].strip(), name.split("...")[0].strip()]:
+                try:
+                    locator = self._page.get_by_placeholder(term, exact=False).first
+                    if locator.count() > 0 and locator.is_visible():
+                        return locator
+                except Exception:
+                    pass
+
+        # Strategy 3: get_by_label (for labeled form fields)
+        if action_type == "type" and name:
             try:
-                locator = self._page.get_by_text(name, exact=False).first
-                if locator.count() > 0:
+                locator = self._page.get_by_label(name, exact=False).first
+                if locator.count() > 0 and locator.is_visible():
                     return locator
             except Exception:
                 pass
+
+        # Strategy 4: get_by_text (for links/buttons)
+        if name:
+            try:
+                locator = self._page.get_by_text(name, exact=False).first
+                if locator.count() > 0 and locator.is_visible():
+                    return locator
+            except Exception:
+                pass
+
+        # Strategy 5: CSS selector for visible input/textarea elements (last resort for type)
+        if action_type == "type":
+            for selector in [
+                'input[type="text"]:visible',
+                'input[type="search"]:visible',
+                'input:not([type="hidden"]):visible',
+                'textarea:visible',
+            ]:
+                try:
+                    locator = self._page.locator(selector).first
+                    if locator.count() > 0:
+                        return locator
+                except Exception:
+                    pass
 
         return None
 

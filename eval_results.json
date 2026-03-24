@@ -1,0 +1,681 @@
+{
+  "timestamp": "2026-03-24 20:39:46",
+  "config": {
+    "modes": [
+      "reactive-dreamer",
+      "plan-first"
+    ],
+    "categories": null,
+    "num_plans": 3,
+    "min_steps": 0,
+    "max_steps": 10,
+    "repeat": 1
+  },
+  "results": [
+    {
+      "task_id": "search_1",
+      "task": "Search for 'python web scraping' on DuckDuckGo",
+      "mode": "reactive-dreamer",
+      "success": true,
+      "steps_taken": 10,
+      "total_time_s": 184.09,
+      "error": null,
+      "final_url": "https://duckduckgo.com/?ia=web&origin=funnel_home_website&t=h_&q=python+web+scraping&natb=v526-7__&cp=atbsc",
+      "plan_count": 0,
+      "plan_scores": [],
+      "steps_log": [
+        {
+          "step": 0,
+          "action": "type [6] \"python web scraping\"",
+          "status": "executed type on [6]",
+          "url": "https://duckduckgo.com/?ia=web&origin=funnel_home_website&t=h_&q=python+web+scraping",
+          "elapsed_ms": 10669
+        },
+        {
+          "step": 1,
+          "action": "click [97]",
+          "status": "executed click on [97]",
+          "url": "https://duckduckgo.com/?ia=web&origin=funnel_home_website&t=h_&q=python+web+scraping&natb=v526-7__&cp=atbsc",
+          "elapsed_ms": 9749
+        },
+        {
+          "step": 2,
+          "action": "click [3]",
+          "status": "error: Locator.click: Timeout 5000ms exceeded.\nCall log:\n  - waiting for get_by_role(\"link\", name=\"Protection. Privacy. Peace of mind.\").first\n    - locator resolved to <a href=\"/compare-privacy\" class=\"TQFs9yvBgnOz3EeEI5OL ffON2NH02oMAcqyoh2UU MQCbz04ET5EljRmK3YpQ hF7w5TROgutbYQwHzEf_\">Protection. Privacy. Peace of mind.</a>\n  - attempting click action\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - <div class=\"atb-extension-overlay__content  js-extension-overlay-content  ddg-extension-hide\">\u2026</div> from <div id=\"atb-extension-overlay\" class=\"atb-extension-overlay atb-extension-overlay--firefox js-extension-overlay atb-extension-overlay--promote-mobile is-showing\">\u2026</div> subtree intercepts pointer events\n    - retrying click action\n    - waiting 20ms\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - <div class=\"atb-extension-overlay__content  js-extension-overlay-content  ddg-extension-hide\">\u2026</div> from <div id=\"atb-extension-overlay\" class=\"atb-extension-overlay atb-extension-overlay--firefox js-extension-overlay atb-extension-overlay--promote-mobile is-showing\">\u2026</div> subtree intercepts pointer events\n    - retrying click action\n      - waiting 100ms\n    9 \u00d7 waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - <div class=\"atb-extension-overlay__content  js-extension-overlay-content  ddg-extension-hide\">\u2026</div> from <div id=\"atb-extension-overlay\" class=\"atb-extension-overlay atb-extension-overlay--firefox js-extension-overlay atb-extension-overlay--promote-mobile is-showing\">\u2026</div> subtree intercepts pointer events\n    - retrying click action\n      - waiting 500ms\n",
+          "url": "https://duckduckgo.com/?ia=web&origin=funnel_home_website&t=h_&q=python+web+scraping&natb=v526-7__&cp=atbsc",
+          "elapsed_ms": 25304
+        },
+        {
+          "step": 3,
+          "action": "click [82]",
+          "status": "error: Locator.click: Timeout 5000ms exceeded.\nCall log:\n  - waiting for get_by_role(\"link\", name=\"Browser Extensions\").first\n    - locator resolved to <a href=\"/duckduckgo-help-pages/desktop/adding-duckduckgo-to-your-browser/\">Browser Extensions</a>\n  - attempting click action\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - element is outside of the viewport\n    - retrying click action\n    - waiting 20ms\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - element is outside of the viewport\n    - retrying click action\n      - waiting 100ms\n    10 \u00d7 waiting for element to be visible, enabled and stable\n       - element is visible, enabled and stable\n       - scrolling into view if needed\n       - done scrolling\n       - element is outside of the viewport\n     - retrying click action\n       - waiting 500ms\n",
+          "url": "https://duckduckgo.com/?ia=web&origin=funnel_home_website&t=h_&q=python+web+scraping&natb=v526-7__&cp=atbsc",
+          "elapsed_ms": 24843
+        },
+        {
+          "step": 4,
+          "action": "click [3]",
+          "status": "error: Locator.click: Timeout 5000ms exceeded.\nCall log:\n  - waiting for get_by_role(\"link\", name=\"Protection. Privacy. Peace of mind.\").first\n    - locator resolved to <a href=\"/compare-privacy\" class=\"TQFs9yvBgnOz3EeEI5OL ffON2NH02oMAcqyoh2UU MQCbz04ET5EljRmK3YpQ hF7w5TROgutbYQwHzEf_\">Protection. Privacy. Peace of mind.</a>\n  - attempting click action\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - <div class=\"atb-extension-overlay__content  js-extension-overlay-content  ddg-extension-hide\">\u2026</div> from <div id=\"atb-extension-overlay\" class=\"atb-extension-overlay atb-extension-overlay--firefox js-extension-overlay atb-extension-overlay--promote-mobile is-showing\">\u2026</div> subtree intercepts pointer events\n    - retrying click action\n    - waiting 20ms\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - <div class=\"atb-extension-overlay__content  js-extension-overlay-content  ddg-extension-hide\">\u2026</div> from <div id=\"atb-extension-overlay\" class=\"atb-extension-overlay atb-extension-overlay--firefox js-extension-overlay atb-extension-overlay--promote-mobile is-showing\">\u2026</div> subtree intercepts pointer events\n    - retrying click action\n      - waiting 100ms\n    9 \u00d7 waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - <div class=\"atb-extension-overlay__content  js-extension-overlay-content  ddg-extension-hide\">\u2026</div> from <div id=\"atb-extension-overlay\" class=\"atb-extension-overlay atb-extension-overlay--firefox js-extension-overlay atb-extension-overlay--promote-mobile is-showing\">\u2026</div> subtree intercepts pointer events\n    - retrying click action\n      - waiting 500ms\n",
+          "url": "https://duckduckgo.com/?ia=web&origin=funnel_home_website&t=h_&q=python+web+scraping&natb=v526-7__&cp=atbsc",
+          "elapsed_ms": 18115
+        },
+        {
+          "step": 5,
+          "action": "click [3]",
+          "status": "error: Locator.click: Timeout 5000ms exceeded.\nCall log:\n  - waiting for get_by_role(\"link\", name=\"Protection. Privacy. Peace of mind.\").first\n    - locator resolved to <a href=\"/compare-privacy\" class=\"TQFs9yvBgnOz3EeEI5OL ffON2NH02oMAcqyoh2UU MQCbz04ET5EljRmK3YpQ hF7w5TROgutbYQwHzEf_\">Protection. Privacy. Peace of mind.</a>\n  - attempting click action\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - <div class=\"atb-extension-overlay__content  js-extension-overlay-content  ddg-extension-hide\">\u2026</div> from <div id=\"atb-extension-overlay\" class=\"atb-extension-overlay atb-extension-overlay--firefox js-extension-overlay atb-extension-overlay--promote-mobile is-showing\">\u2026</div> subtree intercepts pointer events\n    - retrying click action\n    - waiting 20ms\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - <div class=\"atb-extension-overlay__content  js-extension-overlay-content  ddg-extension-hide\">\u2026</div> from <div id=\"atb-extension-overlay\" class=\"atb-extension-overlay atb-extension-overlay--firefox js-extension-overlay atb-extension-overlay--promote-mobile is-showing\">\u2026</div> subtree intercepts pointer events\n    - retrying click action\n      - waiting 100ms\n    9 \u00d7 waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - <div class=\"atb-extension-overlay__content  js-extension-overlay-content  ddg-extension-hide\">\u2026</div> from <div id=\"atb-extension-overlay\" class=\"atb-extension-overlay atb-extension-overlay--firefox js-extension-overlay atb-extension-overlay--promote-mobile is-showing\">\u2026</div> subtree intercepts pointer events\n    - retrying click action\n      - waiting 500ms\n",
+          "url": "https://duckduckgo.com/?ia=web&origin=funnel_home_website&t=h_&q=python+web+scraping&natb=v526-7__&cp=atbsc",
+          "elapsed_ms": 21206
+        },
+        {
+          "step": 6,
+          "action": "click [13]",
+          "status": "error: Locator.click: Timeout 5000ms exceeded.\nCall log:\n  - waiting for get_by_role(\"switch\", name=\"\u2713\").first\n    - locator resolved to <div role=\"switch\" aria-checked=\"false\" class=\"twMgHM3B8cVRU4iN6brN aZO4YZYIAXDN6NUwv7yO\">\u2026</div>\n  - attempting click action\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - <div class=\"atb-extension-overlay__content  js-extension-overlay-content  ddg-extension-hide\">\u2026</div> from <div id=\"atb-extension-overlay\" class=\"atb-extension-overlay atb-extension-overlay--firefox js-extension-overlay atb-extension-overlay--promote-mobile is-showing\">\u2026</div> subtree intercepts pointer events\n    - retrying click action\n    - waiting 20ms\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - <div class=\"atb-extension-overlay__content  js-extension-overlay-content  ddg-extension-hide\">\u2026</div> from <div id=\"atb-extension-overlay\" class=\"atb-extension-overlay atb-extension-overlay--firefox js-extension-overlay atb-extension-overlay--promote-mobile is-showing\">\u2026</div> subtree intercepts pointer events\n    - retrying click action\n      - waiting 100ms\n    10 \u00d7 waiting for element to be visible, enabled and stable\n       - element is visible, enabled and stable\n       - scrolling into view if needed\n       - done scrolling\n       - <div class=\"atb-extension-overlay__content  js-extension-overlay-content  ddg-extension-hide\">\u2026</div> from <div id=\"atb-extension-overlay\" class=\"atb-extension-overlay atb-extension-overlay--firefox js-extension-overlay atb-extension-overlay--promote-mobile is-showing\">\u2026</div> subtree intercepts pointer events\n     - retrying click action\n       - waiting 500ms\n",
+          "url": "https://duckduckgo.com/?ia=web&origin=funnel_home_website&t=h_&q=python+web+scraping&natb=v526-7__&cp=atbsc",
+          "elapsed_ms": 19394
+        },
+        {
+          "step": 7,
+          "action": "click [3]",
+          "status": "error: Locator.click: Timeout 5000ms exceeded.\nCall log:\n  - waiting for get_by_role(\"link\", name=\"Protection. Privacy. Peace of mind.\").first\n    - locator resolved to <a href=\"/compare-privacy\" class=\"TQFs9yvBgnOz3EeEI5OL ffON2NH02oMAcqyoh2UU MQCbz04ET5EljRmK3YpQ hF7w5TROgutbYQwHzEf_\">Protection. Privacy. Peace of mind.</a>\n  - attempting click action\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - <div class=\"atb-extension-overlay__content  js-extension-overlay-content  ddg-extension-hide\">\u2026</div> from <div id=\"atb-extension-overlay\" class=\"atb-extension-overlay atb-extension-overlay--firefox js-extension-overlay atb-extension-overlay--promote-mobile is-showing\">\u2026</div> subtree intercepts pointer events\n    - retrying click action\n    - waiting 20ms\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - <div class=\"atb-extension-overlay__content  js-extension-overlay-content  ddg-extension-hide\">\u2026</div> from <div id=\"atb-extension-overlay\" class=\"atb-extension-overlay atb-extension-overlay--firefox js-extension-overlay atb-extension-overlay--promote-mobile is-showing\">\u2026</div> subtree intercepts pointer events\n    - retrying click action\n      - waiting 100ms\n    10 \u00d7 waiting for element to be visible, enabled and stable\n       - element is visible, enabled and stable\n       - scrolling into view if needed\n       - done scrolling\n       - <div class=\"atb-extension-overlay__content  js-extension-overlay-content  ddg-extension-hide\">\u2026</div> from <div id=\"atb-extension-overlay\" class=\"atb-extension-overlay atb-extension-overlay--firefox js-extension-overlay atb-extension-overlay--promote-mobile is-showing\">\u2026</div> subtree intercepts pointer events\n     - retrying click action\n       - waiting 500ms\n",
+          "url": "https://duckduckgo.com/?ia=web&origin=funnel_home_website&t=h_&q=python+web+scraping&natb=v526-7__&cp=atbsc",
+          "elapsed_ms": 17888
+        },
+        {
+          "step": 8,
+          "action": "click [13]",
+          "status": "error: Locator.click: Timeout 5000ms exceeded.\nCall log:\n  - waiting for get_by_role(\"switch\", name=\"\u2713\").first\n    - locator resolved to <div role=\"switch\" aria-checked=\"false\" class=\"twMgHM3B8cVRU4iN6brN aZO4YZYIAXDN6NUwv7yO\">\u2026</div>\n  - attempting click action\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - <div class=\"atb-extension-overlay__content  js-extension-overlay-content  ddg-extension-hide\">\u2026</div> from <div id=\"atb-extension-overlay\" class=\"atb-extension-overlay atb-extension-overlay--firefox js-extension-overlay atb-extension-overlay--promote-mobile is-showing\">\u2026</div> subtree intercepts pointer events\n    - retrying click action\n    - waiting 20ms\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - <div class=\"atb-extension-overlay__content  js-extension-overlay-content  ddg-extension-hide\">\u2026</div> from <div id=\"atb-extension-overlay\" class=\"atb-extension-overlay atb-extension-overlay--firefox js-extension-overlay atb-extension-overlay--promote-mobile is-showing\">\u2026</div> subtree intercepts pointer events\n    - retrying click action\n      - waiting 100ms\n    10 \u00d7 waiting for element to be visible, enabled and stable\n       - element is visible, enabled and stable\n       - scrolling into view if needed\n       - done scrolling\n       - <div class=\"atb-extension-overlay__content  js-extension-overlay-content  ddg-extension-hide\">\u2026</div> from <div id=\"atb-extension-overlay\" class=\"atb-extension-overlay atb-extension-overlay--firefox js-extension-overlay atb-extension-overlay--promote-mobile is-showing\">\u2026</div> subtree intercepts pointer events\n     - retrying click action\n       - waiting 500ms\n",
+          "url": "https://duckduckgo.com/?ia=web&origin=funnel_home_website&t=h_&q=python+web+scraping&natb=v526-7__&cp=atbsc",
+          "elapsed_ms": 16483
+        },
+        {
+          "step": 9,
+          "action": "click [3]",
+          "status": "error: Locator.click: Timeout 5000ms exceeded.\nCall log:\n  - waiting for get_by_role(\"link\", name=\"Protection. Privacy. Peace of mind.\").first\n    - locator resolved to <a href=\"/compare-privacy\" class=\"TQFs9yvBgnOz3EeEI5OL ffON2NH02oMAcqyoh2UU MQCbz04ET5EljRmK3YpQ hF7w5TROgutbYQwHzEf_\">Protection. Privacy. Peace of mind.</a>\n  - attempting click action\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - <div class=\"atb-extension-overlay__content  js-extension-overlay-content  ddg-extension-hide\">\u2026</div> from <div id=\"atb-extension-overlay\" class=\"atb-extension-overlay atb-extension-overlay--firefox js-extension-overlay atb-extension-overlay--promote-mobile is-showing\">\u2026</div> subtree intercepts pointer events\n    - retrying click action\n    - waiting 20ms\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - <div class=\"atb-extension-overlay__content  js-extension-overlay-content  ddg-extension-hide\">\u2026</div> from <div id=\"atb-extension-overlay\" class=\"atb-extension-overlay atb-extension-overlay--firefox js-extension-overlay atb-extension-overlay--promote-mobile is-showing\">\u2026</div> subtree intercepts pointer events\n    - retrying click action\n      - waiting 100ms\n    9 \u00d7 waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - <div class=\"atb-extension-overlay__content  js-extension-overlay-content  ddg-extension-hide\">\u2026</div> from <div id=\"atb-extension-overlay\" class=\"atb-extension-overlay atb-extension-overlay--firefox js-extension-overlay atb-extension-overlay--promote-mobile is-showing\">\u2026</div> subtree intercepts pointer events\n    - retrying click action\n      - waiting 500ms\n    - waiting for element to be visible, enabled and stable\n    - element is visible, enabled and stable\n    - scrolling into view if needed\n    - done scrolling\n",
+          "url": "https://duckduckgo.com/?ia=web&origin=funnel_home_website&t=h_&q=python+web+scraping&natb=v526-7__&cp=atbsc",
+          "elapsed_ms": 16867
+        }
+      ]
+    },
+    {
+      "task_id": "search_1",
+      "task": "Search for 'python web scraping' on DuckDuckGo",
+      "mode": "plan-first",
+      "success": true,
+      "steps_taken": 2,
+      "total_time_s": 79.12,
+      "error": null,
+      "final_url": "https://duckduckgo.com/?ia=web&origin=funnel_home_website&t=h_&q=python+web+scraping",
+      "plan_count": 3,
+      "plan_scores": [
+        0.95,
+        0.85,
+        0.85
+      ],
+      "steps_log": [
+        {
+          "step": 0,
+          "action": "type [6] \"python web scraping\"",
+          "status": "executed type on [6]",
+          "url": "https://duckduckgo.com/?ia=web&origin=funnel_home_website&t=h_&q=python+web+scraping",
+          "elapsed_ms": 1214
+        },
+        {
+          "step": 1,
+          "action": "stop",
+          "status": "stopped",
+          "url": "https://duckduckgo.com/?ia=web&origin=funnel_home_website&t=h_&q=python+web+scraping",
+          "elapsed_ms": 0
+        }
+      ]
+    },
+    {
+      "task_id": "search_2",
+      "task": "Search for 'best mechanical keyboards 2024' on Google",
+      "mode": "reactive-dreamer",
+      "success": false,
+      "steps_taken": 2,
+      "total_time_s": 24.59,
+      "error": null,
+      "final_url": "https://www.google.com/sorry/index?continue=https://www.google.com/search%3Fq%3Dbest%2Bmechanical%2Bkeyboards%2B2024%26sca_esv%3D1b9fc756e6c3b46d%26source%3Dhp%26ei%3D3aTCadfRD-uYseMPkYzBwAQ%26iflsig%3DAFdpzrgAAAAAacKy7Q0wFGNRxJImEgJBPE3M9KDpzjdd%26ved%3D0ahUKEwiXtITB5LiTAxVrTGwGHRFGEEgQ4dUDCBY%26uact%3D5%26oq%3Dbest%2Bmechanical%2Bkeyboards%2B2024%26gs_lp%3DEgdnd3Mtd2l6Ih5iZXN0IG1lY2hhbmljYWwga2V5Ym9hcmRzIDIwMjQyChAAGAMY6gIYjwEyChAAGAMY6gIYjwEyChAAGAMY6gIYjwEyChAuGAMY6gIYjwEyChAAGAMY6gIYjwEyChAuGAMY6gIYjwEyChAAGAMY6gIYjwEyChAAGAMY6gIYjwEyChAAGAMY6gIYjwEyChAAGAMY6gIYjwFINVAsWCxwAXgAkAEAmAEAoAEAqgEAuAEDyAEA-AEBmAIBoAILqAIKmAML8QVqeXc9oHROh5IHATGgBwCyBwC4BwDCBwMzLTHIBwmACAA%26sclient%3Dgws-wiz%26sei%3D5qTCabzsLob24-EP47K1KA&q=EgR6pFIcGOfJis4GIjC4bw0ZiVagxEiGjJ1-MzbY7oTBl3DxNIc28CUrI86dkwCvdhhjSipovpbP5GYSVMoyAVJaAUM",
+      "plan_count": 0,
+      "plan_scores": [],
+      "steps_log": [
+        {
+          "step": 0,
+          "action": "type [7] \"best mechanical keyboards 2024\"",
+          "status": "executed type on [7]",
+          "url": "https://www.google.com/sorry/index?continue=https://www.google.com/search%3Fq%3Dbest%2Bmechanical%2Bkeyboards%2B2024%26sca_esv%3D1b9fc756e6c3b46d%26source%3Dhp%26ei%3D3aTCadfRD-uYseMPkYzBwAQ%26iflsig%3DAFdpzrgAAAAAacKy7Q0wFGNRxJImEgJBPE3M9KDpzjdd%26ved%3D0ahUKEwiXtITB5LiTAxVrTGwGHRFGEEgQ4dUDCBY%26uact%3D5%26oq%3Dbest%2Bmechanical%2Bkeyboards%2B2024%26gs_lp%3DEgdnd3Mtd2l6Ih5iZXN0IG1lY2hhbmljYWwga2V5Ym9hcmRzIDIwMjQyChAAGAMY6gIYjwEyChAAGAMY6gIYjwEyChAAGAMY6gIYjwEyChAuGAMY6gIYjwEyChAAGAMY6gIYjwEyChAuGAMY6gIYjwEyChAAGAMY6gIYjwEyChAAGAMY6gIYjwEyChAAGAMY6gIYjwEyChAAGAMY6gIYjwFINVAsWCxwAXgAkAEAmAEAoAEAqgEAuAEDyAEA-AEBmAIBoAILqAIKmAML8QVqeXc9oHROh5IHATGgBwCyBwC4BwDCBwMzLTHIBwmACAA%26sclient%3Dgws-wiz%26sei%3D5qTCabzsLob24-EP47K1KA&q=EgR6pFIcGOfJis4GIjC4bw0ZiVagxEiGjJ1-MzbY7oTBl3DxNIc28CUrI86dkwCvdhhjSipovpbP5GYSVMoyAVJaAUM",
+          "elapsed_ms": 7959
+        },
+        {
+          "step": 1,
+          "action": "stop",
+          "status": "stopped",
+          "url": "https://www.google.com/sorry/index?continue=https://www.google.com/search%3Fq%3Dbest%2Bmechanical%2Bkeyboards%2B2024%26sca_esv%3D1b9fc756e6c3b46d%26source%3Dhp%26ei%3D3aTCadfRD-uYseMPkYzBwAQ%26iflsig%3DAFdpzrgAAAAAacKy7Q0wFGNRxJImEgJBPE3M9KDpzjdd%26ved%3D0ahUKEwiXtITB5LiTAxVrTGwGHRFGEEgQ4dUDCBY%26uact%3D5%26oq%3Dbest%2Bmechanical%2Bkeyboards%2B2024%26gs_lp%3DEgdnd3Mtd2l6Ih5iZXN0IG1lY2hhbmljYWwga2V5Ym9hcmRzIDIwMjQyChAAGAMY6gIYjwEyChAAGAMY6gIYjwEyChAAGAMY6gIYjwEyChAuGAMY6gIYjwEyChAAGAMY6gIYjwEyChAuGAMY6gIYjwEyChAAGAMY6gIYjwEyChAAGAMY6gIYjwEyChAAGAMY6gIYjwEyChAAGAMY6gIYjwFINVAsWCxwAXgAkAEAmAEAoAEAqgEAuAEDyAEA-AEBmAIBoAILqAIKmAML8QVqeXc9oHROh5IHATGgBwCyBwC4BwDCBwMzLTHIBwmACAA%26sclient%3Dgws-wiz%26sei%3D5qTCabzsLob24-EP47K1KA&q=EgR6pFIcGOfJis4GIjC4bw0ZiVagxEiGjJ1-MzbY7oTBl3DxNIc28CUrI86dkwCvdhhjSipovpbP5GYSVMoyAVJaAUM",
+          "elapsed_ms": 16389
+        }
+      ]
+    },
+    {
+      "task_id": "search_2",
+      "task": "Search for 'best mechanical keyboards 2024' on Google",
+      "mode": "plan-first",
+      "success": false,
+      "steps_taken": 2,
+      "total_time_s": 60.92,
+      "error": null,
+      "final_url": "https://www.google.com/sorry/index?continue=https://www.google.com/search%3Fq%3Dbest%2Bmechanical%2Bkeyboards%2B2024%26sca_esv%3D1b9fc756e6c3b46d%26source%3Dhp%26ei%3D-qTCaZLXG9T7seMPweDmoAw%26iflsig%3DAFdpzrgAAAAAacKzCtUmP9ifWx7KP-VsWb6S9LQMnoiY%26ved%3D0ahUKEwiSvPrO5LiTAxXUfWwGHUGwGcQQ4dUDCBY%26uact%3D5%26oq%3Dbest%2Bmechanical%2Bkeyboards%2B2024%26gs_lp%3DEgdnd3Mtd2l6Ih5iZXN0IG1lY2hhbmljYWwga2V5Ym9hcmRzIDIwMjQyChAAGAMY6gIYjwEyChAAGAMY6gIYjwEyChAAGAMY6gIYjwEyChAAGAMY6gIYjwEyChAuGAMY6gIYjwEyChAAGAMY6gIYjwEyChAAGAMY6gIYjwEyChAAGAMY6gIYjwEyChAAGAMY6gIYjwEyChAAGAMY6gIYjwFINVAtWC1wAXgAkAEAmAEAoAEAqgEAuAEDyAEA-AEBmAIBoAILqAIKmAML8QXmqAf8ih7tq5IHATGgBwCyBwC4BwDCBwMzLTHIBwmACAA%26sclient%3Dgws-wiz%26sei%3DOKXCaYroDdeXwcsP2KqAoAY&q=EgR6pFIcGLjKis4GIjD-anGvjOfU6bt3WGsQ94XAN6OjqZ3EQoFbkpOpAR3xgyhbG9kizZWXuqLBAlmphWkyAVJaAUM",
+      "plan_count": 3,
+      "plan_scores": [
+        0.95,
+        0.85,
+        0.75
+      ],
+      "steps_log": [
+        {
+          "step": 0,
+          "action": "type [7] \"best mechanical keyboards 2024\"",
+          "status": "executed type on [7]",
+          "url": "https://www.google.com/sorry/index?continue=https://www.google.com/search%3Fq%3Dbest%2Bmechanical%2Bkeyboards%2B2024%26sca_esv%3D1b9fc756e6c3b46d%26source%3Dhp%26ei%3D-qTCaZLXG9T7seMPweDmoAw%26iflsig%3DAFdpzrgAAAAAacKzCtUmP9ifWx7KP-VsWb6S9LQMnoiY%26ved%3D0ahUKEwiSvPrO5LiTAxXUfWwGHUGwGcQQ4dUDCBY%26uact%3D5%26oq%3Dbest%2Bmechanical%2Bkeyboards%2B2024%26gs_lp%3DEgdnd3Mtd2l6Ih5iZXN0IG1lY2hhbmljYWwga2V5Ym9hcmRzIDIwMjQyChAAGAMY6gIYjwEyChAAGAMY6gIYjwEyChAAGAMY6gIYjwEyChAAGAMY6gIYjwEyChAuGAMY6gIYjwEyChAAGAMY6gIYjwEyChAAGAMY6gIYjwEyChAAGAMY6gIYjwEyChAAGAMY6gIYjwEyChAAGAMY6gIYjwFINVAtWC1wAXgAkAEAmAEAoAEAqgEAuAEDyAEA-AEBmAIBoAILqAIKmAML8QXmqAf8ih7tq5IHATGgBwCyBwC4BwDCBwMzLTHIBwmACAA%26sclient%3Dgws-wiz%26sei%3DOKXCaYroDdeXwcsP2KqAoAY&q=EgR6pFIcGLjKis4GIjD-anGvjOfU6bt3WGsQ94XAN6OjqZ3EQoFbkpOpAR3xgyhbG9kizZWXuqLBAlmphWkyAVJaAUM",
+          "elapsed_ms": 1138
+        },
+        {
+          "step": 1,
+          "action": "stop",
+          "status": "stopped",
+          "url": "https://www.google.com/sorry/index?continue=https://www.google.com/search%3Fq%3Dbest%2Bmechanical%2Bkeyboards%2B2024%26sca_esv%3D1b9fc756e6c3b46d%26source%3Dhp%26ei%3D-qTCaZLXG9T7seMPweDmoAw%26iflsig%3DAFdpzrgAAAAAacKzCtUmP9ifWx7KP-VsWb6S9LQMnoiY%26ved%3D0ahUKEwiSvPrO5LiTAxXUfWwGHUGwGcQQ4dUDCBY%26uact%3D5%26oq%3Dbest%2Bmechanical%2Bkeyboards%2B2024%26gs_lp%3DEgdnd3Mtd2l6Ih5iZXN0IG1lY2hhbmljYWwga2V5Ym9hcmRzIDIwMjQyChAAGAMY6gIYjwEyChAAGAMY6gIYjwEyChAAGAMY6gIYjwEyChAAGAMY6gIYjwEyChAuGAMY6gIYjwEyChAAGAMY6gIYjwEyChAAGAMY6gIYjwEyChAAGAMY6gIYjwEyChAAGAMY6gIYjwEyChAAGAMY6gIYjwFINVAtWC1wAXgAkAEAmAEAoAEAqgEAuAEDyAEA-AEBmAIBoAILqAIKmAML8QXmqAf8ih7tq5IHATGgBwCyBwC4BwDCBwMzLTHIBwmACAA%26sclient%3Dgws-wiz%26sei%3DOKXCaYroDdeXwcsP2KqAoAY&q=EgR6pFIcGLjKis4GIjD-anGvjOfU6bt3WGsQ94XAN6OjqZ3EQoFbkpOpAR3xgyhbG9kizZWXuqLBAlmphWkyAVJaAUM",
+          "elapsed_ms": 0
+        }
+      ]
+    },
+    {
+      "task_id": "shopping_1",
+      "task": "Find Sony headphones on Amazon",
+      "mode": "reactive-dreamer",
+      "success": false,
+      "steps_taken": 3,
+      "total_time_s": 51.05,
+      "error": null,
+      "final_url": "https://duckduckgo.com/?q=sony+headphones&t=h_&ia=web",
+      "plan_count": 0,
+      "plan_scores": [],
+      "steps_log": [
+        {
+          "step": 0,
+          "action": "type [6] \"sony headphones\"",
+          "status": "executed type on [6]",
+          "url": "https://duckduckgo.com/?ia=web&origin=funnel_home_website&t=h_&q=sony+headphones",
+          "elapsed_ms": 9502
+        },
+        {
+          "step": 1,
+          "action": "click [2]",
+          "status": "executed click on [2]",
+          "url": "https://duckduckgo.com/?q=sony+headphones&t=h_",
+          "elapsed_ms": 28721
+        },
+        {
+          "step": 2,
+          "action": "stop",
+          "status": "stopped",
+          "url": "https://duckduckgo.com/?q=sony+headphones&t=h_",
+          "elapsed_ms": 12039
+        }
+      ]
+    },
+    {
+      "task_id": "shopping_1",
+      "task": "Find Sony headphones on Amazon",
+      "mode": "plan-first",
+      "success": true,
+      "steps_taken": 4,
+      "total_time_s": 101.5,
+      "error": null,
+      "final_url": "https://www.amazon.in/s?k=sony+headphones&ref=nb_sb_noss",
+      "plan_count": 3,
+      "plan_scores": [
+        0.55,
+        0.75,
+        0.75
+      ],
+      "steps_log": [
+        {
+          "step": 0,
+          "action": "type [6] \"amazon.com\"",
+          "status": "executed type on [6]",
+          "url": "https://duckduckgo.com/?ia=web&origin=funnel_home_website&t=h_&q=amazon.com",
+          "elapsed_ms": 1220
+        },
+        {
+          "step": 1,
+          "action": "click [?amazon_homepage]",
+          "status": "executed click on [11]",
+          "url": "https://www.amazon.in/?tag=msndeskabkin-21&ref=pd_sl_5chruhtnml_e&adgrpid=1313918000921217&hvadid=82120142311099&hvnetw=o&hvqmt=e&hvbmt=be&hvdev=c&hvlocint=&hvlocphy=158531&hvtargid=kwd-82120751534645:loc-90&hydadcr=5619_2377285&mcid=5ebcd95ebf04311199ca2c4d73cbfc8c&msclkid=de2f3e4a1f2c10c262145788bae0637a",
+          "elapsed_ms": 4226
+        },
+        {
+          "step": 2,
+          "action": "type [?amazon_search_box] \"sony headphones\"",
+          "status": "executed type on [9]",
+          "url": "https://www.amazon.in/s?k=sony+headphones&ref=nb_sb_noss",
+          "elapsed_ms": 8595
+        },
+        {
+          "step": 3,
+          "action": "stop",
+          "status": "stopped",
+          "url": "https://www.amazon.in/s?k=sony+headphones&ref=nb_sb_noss",
+          "elapsed_ms": 0
+        }
+      ]
+    },
+    {
+      "task_id": "shopping_2",
+      "task": "Search for a red blanket on Amazon",
+      "mode": "reactive-dreamer",
+      "success": false,
+      "steps_taken": 2,
+      "total_time_s": 21.63,
+      "error": null,
+      "final_url": "https://duckduckgo.com/?ia=web&origin=funnel_home_website&t=h_&q=red+blanket",
+      "plan_count": 0,
+      "plan_scores": [],
+      "steps_log": [
+        {
+          "step": 0,
+          "action": "type [6] \"red blanket\"",
+          "status": "executed type on [6]",
+          "url": "https://duckduckgo.com/?ia=web&origin=funnel_home_website&t=h_&q=red+blanket",
+          "elapsed_ms": 11033
+        },
+        {
+          "step": 1,
+          "action": "stop",
+          "status": "stopped",
+          "url": "https://duckduckgo.com/?ia=web&origin=funnel_home_website&t=h_&q=red+blanket",
+          "elapsed_ms": 10033
+        }
+      ]
+    },
+    {
+      "task_id": "shopping_2",
+      "task": "Search for a red blanket on Amazon",
+      "mode": "plan-first",
+      "success": false,
+      "steps_taken": 3,
+      "total_time_s": 126.14,
+      "error": null,
+      "final_url": "https://www.amazon.in/?tag=msndeskabkin-21&ref=pd_sl_myh38910b_e&adgrpid=1324913121555467&hvadid=82807336470514&hvnetw=o&hvqmt=e&hvbmt=be&hvdev=c&hvlocint=&hvlocphy=158078&hvtargid=kwd-82807957656483:loc-90&hydadcr=5620_2377278&mcid=bf83b4991e2f3eb79d07c8f0ac1b5488&msclkid=3176ede373dd15af8bfd8421d5b6f543",
+      "plan_count": 3,
+      "plan_scores": [
+        0.35,
+        0.25,
+        0.78
+      ],
+      "steps_log": [
+        {
+          "step": 0,
+          "action": "type [1] \"amazon.com\"",
+          "status": "executed type on [1]",
+          "url": "https://duckduckgo.com/?ia=web&origin=funnel_home_website&t=h_&q=amazon.com&chip-select=search",
+          "elapsed_ms": 1181
+        },
+        {
+          "step": 1,
+          "action": "click [?amazon_homepage]",
+          "status": "executed click on [12]",
+          "url": "https://www.amazon.in/?tag=msndeskabkin-21&ref=pd_sl_myh38910b_e&adgrpid=1324913121555467&hvadid=82807336470514&hvnetw=o&hvqmt=e&hvbmt=be&hvdev=c&hvlocint=&hvlocphy=158078&hvtargid=kwd-82807957656483:loc-90&hydadcr=5620_2377278&mcid=bf83b4991e2f3eb79d07c8f0ac1b5488&msclkid=3176ede373dd15af8bfd8421d5b6f543",
+          "elapsed_ms": 4294
+        },
+        {
+          "step": 2,
+          "action": "type [?search_box] \"red blanket\"",
+          "status": "error: Locator.fill: Error: Element is not an <input>, <textarea> or [contenteditable] element\nCall log:\n  - waiting for get_by_role(\"combobox\", name=\"Select the department you want to search in\").first\n    - locator resolved to <select name=\"url\" tabindex=\"0\" title=\"Search in\" data-nav-selected=\"0\" id=\"searchDropdownBox\" aria-describedby=\"searchDropdownDescription\" data-nav-digest=\"bWVcD3YlJR7bl7mJRxk8QgeiLoU=\" class=\"nav-search-dropdown searchSelect nav-progressive-attrubute nav-progressive-search-dropdown\">\u2026</select>\n    - fill(\"red blanket\")\n  - attempting fill action\n    - waiting for element to be visible, enabled and editable\n",
+          "url": "https://www.amazon.in/?tag=msndeskabkin-21&ref=pd_sl_myh38910b_e&adgrpid=1324913121555467&hvadid=82807336470514&hvnetw=o&hvqmt=e&hvbmt=be&hvdev=c&hvlocint=&hvlocphy=158078&hvtargid=kwd-82807957656483:loc-90&hydadcr=5620_2377278&mcid=bf83b4991e2f3eb79d07c8f0ac1b5488&msclkid=3176ede373dd15af8bfd8421d5b6f543",
+          "elapsed_ms": 7704
+        }
+      ]
+    },
+    {
+      "task_id": "nav_1",
+      "task": "Go to Wikipedia and search for 'artificial intelligence'",
+      "mode": "reactive-dreamer",
+      "success": false,
+      "steps_taken": 10,
+      "total_time_s": 183.3,
+      "error": null,
+      "final_url": "https://en.wiktionary.org/wiki/artificial_intelligence",
+      "plan_count": 0,
+      "plan_scores": [],
+      "steps_log": [
+        {
+          "step": 0,
+          "action": "type [1] \"artificial intelligence\"",
+          "status": "executed type on [1]",
+          "url": "https://duckduckgo.com/?ia=web&origin=funnel_home_website&t=h_&q=artificial+intelligence&chip-select=search",
+          "elapsed_ms": 9881
+        },
+        {
+          "step": 1,
+          "action": "click [28]",
+          "status": "executed click on [28]",
+          "url": "https://en.wikipedia.org/wiki/Artificial_intelligence",
+          "elapsed_ms": 11137
+        },
+        {
+          "step": 2,
+          "action": "click [50]",
+          "status": "executed click on [50]",
+          "url": "https://en.wikipedia.org/wiki/Artificial_intelligence_(disambiguation)",
+          "elapsed_ms": 27673
+        },
+        {
+          "step": 3,
+          "action": "click [37]",
+          "status": "executed click on [37]",
+          "url": "https://en.wiktionary.org/wiki/artificial_intelligence",
+          "elapsed_ms": 15200
+        },
+        {
+          "step": 4,
+          "action": "click [70]",
+          "status": "executed click on [70]",
+          "url": "https://en.wikipedia.org/wiki/Dartmouth_workshop",
+          "elapsed_ms": 62337
+        },
+        {
+          "step": 5,
+          "action": "type [3] \"artificial intelligence\"",
+          "status": "executed type on [3]",
+          "url": "https://en.wikipedia.org/wiki/Artificial_intelligence",
+          "elapsed_ms": 8308
+        },
+        {
+          "step": 6,
+          "action": "click [50]",
+          "status": "executed click on [50]",
+          "url": "https://en.wikipedia.org/wiki/Artificial_intelligence_(disambiguation)",
+          "elapsed_ms": 10272
+        },
+        {
+          "step": 7,
+          "action": "click [37]",
+          "status": "executed click on [37]",
+          "url": "https://en.wiktionary.org/wiki/artificial_intelligence",
+          "elapsed_ms": 13209
+        },
+        {
+          "step": 8,
+          "action": "click [3]",
+          "status": "executed click on [3]",
+          "url": "https://en.wiktionary.org/wiki/artificial_intelligence",
+          "elapsed_ms": 11293
+        },
+        {
+          "step": 9,
+          "action": "click [3]",
+          "status": "executed click on [3]",
+          "url": "https://en.wiktionary.org/wiki/artificial_intelligence",
+          "elapsed_ms": 8052
+        }
+      ]
+    },
+    {
+      "task_id": "nav_1",
+      "task": "Go to Wikipedia and search for 'artificial intelligence'",
+      "mode": "plan-first",
+      "success": false,
+      "steps_taken": 4,
+      "total_time_s": 87.1,
+      "error": null,
+      "final_url": "https://duckduckgo.com/?q=artificial+intelligence&t=h_&ia=web",
+      "plan_count": 3,
+      "plan_scores": [
+        0.75,
+        0.75,
+        0.6
+      ],
+      "steps_log": [
+        {
+          "step": 0,
+          "action": "type [1] \"wikipedia\"",
+          "status": "executed type on [1]",
+          "url": "https://duckduckgo.com/?ia=web&origin=funnel_home_website&t=h_&q=wikipedia&chip-select=search",
+          "elapsed_ms": 1202
+        },
+        {
+          "step": 1,
+          "action": "click [?wikipedia_home]",
+          "status": "executed click on [13]",
+          "url": "https://duckduckgo.com/?q=wikipedia+site%3Awww.wikipedia.org&t=h_&ia=web",
+          "elapsed_ms": 3660
+        },
+        {
+          "step": 2,
+          "action": "type [?search_box] \"artificial intelligence\"",
+          "status": "executed type on [1]",
+          "url": "https://duckduckgo.com/?q=artificial+intelligence&t=h_",
+          "elapsed_ms": 3355
+        },
+        {
+          "step": 3,
+          "action": "stop",
+          "status": "stopped",
+          "url": "https://duckduckgo.com/?q=artificial+intelligence&t=h_",
+          "elapsed_ms": 0
+        }
+      ]
+    },
+    {
+      "task_id": "nav_2",
+      "task": "Go to GitHub and search for 'playwright python'",
+      "mode": "reactive-dreamer",
+      "success": true,
+      "steps_taken": 10,
+      "total_time_s": 89.85,
+      "error": null,
+      "final_url": "https://github.com/microsoft/playwright-python",
+      "plan_count": 0,
+      "plan_scores": [],
+      "steps_log": [
+        {
+          "step": 0,
+          "action": "type [6] \"playwright python\"",
+          "status": "executed type on [6]",
+          "url": "https://duckduckgo.com/?ia=web&origin=funnel_home_website&t=h_&q=playwright+python",
+          "elapsed_ms": 8305
+        },
+        {
+          "step": 1,
+          "action": "click [41]",
+          "status": "executed click on [41]",
+          "url": "https://github.com/microsoft/playwright-python",
+          "elapsed_ms": 13984
+        },
+        {
+          "step": 2,
+          "action": "click [13]",
+          "status": "executed click on [13]",
+          "url": "https://github.com/microsoft/playwright-python",
+          "elapsed_ms": 7887
+        },
+        {
+          "step": 3,
+          "action": "click [13]",
+          "status": "executed click on [13]",
+          "url": "https://github.com/microsoft/playwright-python",
+          "elapsed_ms": 7612
+        },
+        {
+          "step": 4,
+          "action": "click [13]",
+          "status": "executed click on [13]",
+          "url": "https://github.com/microsoft/playwright-python",
+          "elapsed_ms": 8214
+        },
+        {
+          "step": 5,
+          "action": "click [13]",
+          "status": "executed click on [13]",
+          "url": "https://github.com/microsoft/playwright-python",
+          "elapsed_ms": 8184
+        },
+        {
+          "step": 6,
+          "action": "click [13]",
+          "status": "executed click on [13]",
+          "url": "https://github.com/microsoft/playwright-python",
+          "elapsed_ms": 8190
+        },
+        {
+          "step": 7,
+          "action": "click [13]",
+          "status": "executed click on [13]",
+          "url": "https://github.com/microsoft/playwright-python",
+          "elapsed_ms": 7952
+        },
+        {
+          "step": 8,
+          "action": "click [13]",
+          "status": "executed click on [13]",
+          "url": "https://github.com/microsoft/playwright-python",
+          "elapsed_ms": 7650
+        },
+        {
+          "step": 9,
+          "action": "click [13]",
+          "status": "executed click on [13]",
+          "url": "https://github.com/microsoft/playwright-python",
+          "elapsed_ms": 7831
+        }
+      ]
+    },
+    {
+      "task_id": "nav_2",
+      "task": "Go to GitHub and search for 'playwright python'",
+      "mode": "plan-first",
+      "success": false,
+      "steps_taken": 3,
+      "total_time_s": 130.34,
+      "error": null,
+      "final_url": "https://duckduckgo.com/?q=github.com+site%3Agithub.com&t=h_&ia=web",
+      "plan_count": 3,
+      "plan_scores": [
+        0.2,
+        0.75,
+        0.75
+      ],
+      "steps_log": [
+        {
+          "step": 0,
+          "action": "type [6] \"github.com\"",
+          "status": "executed type on [6]",
+          "url": "https://duckduckgo.com/?ia=web&origin=funnel_home_website&t=h_&q=github.com",
+          "elapsed_ms": 1219
+        },
+        {
+          "step": 1,
+          "action": "click [?github_homepage]",
+          "status": "executed click on [11]",
+          "url": "https://duckduckgo.com/?q=github.com+site%3Agithub.com&t=h_&ia=web",
+          "elapsed_ms": 3693
+        },
+        {
+          "step": 2,
+          "action": "type [?github_search] \"playwright python\"",
+          "status": "error: Locator.fill: Error: Element is not an <input>, <textarea>, <select> or [contenteditable] and does not have a role allowing [aria-readonly]\nCall log:\n  - waiting for get_by_role(\"link\", name=\"Search domain github.com\").first\n    - locator resolved to <a rel=\"noopener\" data-handled-by-react=\"true\" title=\"Search domain github.com\" data-testid=\"result-extras-site-search-link\" href=\"/?q=github.com%20site%3Agithub.com&t=h_\">\u2026</a>\n    - fill(\"playwright python\")\n  - attempting fill action\n    - waiting for element to be visible, enabled and editable\n",
+          "url": "https://duckduckgo.com/?q=github.com+site%3Agithub.com&t=h_&ia=web",
+          "elapsed_ms": 3508
+        }
+      ]
+    },
+    {
+      "task_id": "multi_1",
+      "task": "Search for 'laptop' on Amazon and sort by price low to high",
+      "mode": "reactive-dreamer",
+      "success": false,
+      "steps_taken": 2,
+      "total_time_s": 26.89,
+      "error": null,
+      "final_url": "https://duckduckgo.com/?ia=web&origin=funnel_home_website&t=h_&q=laptop&chip-select=search",
+      "plan_count": 0,
+      "plan_scores": [],
+      "steps_log": [
+        {
+          "step": 0,
+          "action": "type [1] \"laptop\"",
+          "status": "executed type on [1]",
+          "url": "https://duckduckgo.com/?ia=web&origin=funnel_home_website&t=h_&q=laptop&chip-select=search",
+          "elapsed_ms": 11144
+        },
+        {
+          "step": 1,
+          "action": "stop",
+          "status": "stopped",
+          "url": "https://duckduckgo.com/?ia=web&origin=funnel_home_website&t=h_&q=laptop&chip-select=search",
+          "elapsed_ms": 15161
+        }
+      ]
+    },
+    {
+      "task_id": "multi_1",
+      "task": "Search for 'laptop' on Amazon and sort by price low to high",
+      "mode": "plan-first",
+      "success": true,
+      "steps_taken": 4,
+      "total_time_s": 158.01,
+      "error": null,
+      "final_url": "https://www.amazon.in/s?k=laptop&ref=nb_sb_noss",
+      "plan_count": 3,
+      "plan_scores": [
+        0.55,
+        0.45,
+        0.65
+      ],
+      "steps_log": [
+        {
+          "step": 0,
+          "action": "type [1] \"amazon.com\"",
+          "status": "executed type on [1]",
+          "url": "https://duckduckgo.com/?ia=web&origin=funnel_home_website&t=h_&q=amazon.com&chip-select=search",
+          "elapsed_ms": 1206
+        },
+        {
+          "step": 1,
+          "action": "click [?amazon_home_link]",
+          "status": "executed click on [12]",
+          "url": "https://www.amazon.in/?tag=msndeskabkin-21&ref=pd_sl_myh38910b_e&adgrpid=1324913121555467&hvadid=82807336470514&hvnetw=o&hvqmt=e&hvbmt=be&hvdev=c&hvlocint=&hvlocphy=158078&hvtargid=kwd-82807957656483:loc-90&hydadcr=5620_2377278&mcid=bf83b4991e2f3eb79d07c8f0ac1b5488&msclkid=d4d4ab0b44871a376478c2c9ed9c2fcd",
+          "elapsed_ms": 5711
+        },
+        {
+          "step": 2,
+          "action": "type [?amazon_search] \"laptop\"",
+          "status": "executed type on [9]",
+          "url": "https://www.amazon.in/s?k=laptop&ref=nb_sb_noss",
+          "elapsed_ms": 8614
+        },
+        {
+          "step": 3,
+          "action": "click [?sort_button]",
+          "status": "error: Locator.click: Timeout 5000ms exceeded.\nCall log:\n  - waiting for get_by_role(\"combobox\", name=\"Sort by:\").first\n    - locator resolved to <select name=\"s\" tabindex=\"0\" role=\"combobox\" autocomplete=\"off\" aria-label=\"Sort by:\" id=\"s-result-sort-select\" data-action=\"a-dropdown-select\" class=\"a-native-dropdown a-declarative\">\u2026</select>\n  - attempting click action\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - <span class=\"a-dropdown-prompt\">Featured</span> from <span tabindex=\"-1\" id=\"a-autoid-0\" aria-hidden=\"true\" class=\"a-button a-button-dropdown a-button-small\">\u2026</span> subtree intercepts pointer events\n    - retrying click action\n    - waiting 20ms\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - <span class=\"a-dropdown-prompt\">Featured</span> from <span tabindex=\"-1\" id=\"a-autoid-0\" aria-hidden=\"true\" class=\"a-button a-button-dropdown a-button-small\">\u2026</span> subtree intercepts pointer events\n    - retrying click action\n      - waiting 100ms\n    9 \u00d7 waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - <span class=\"a-dropdown-prompt\">Featured</span> from <span tabindex=\"-1\" id=\"a-autoid-0\" aria-hidden=\"true\" class=\"a-button a-button-dropdown a-button-small\">\u2026</span> subtree intercepts pointer events\n    - retrying click action\n      - waiting 500ms\n",
+          "url": "https://www.amazon.in/s?k=laptop&ref=nb_sb_noss",
+          "elapsed_ms": 12674
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "reactive-dreamer": {
+      "success_rate": 0.2857142857142857,
+      "avg_steps": 5.571428571428571,
+      "avg_time_s": 83.05714285714285,
+      "error_count": 0
+    },
+    "plan-first": {
+      "success_rate": 0.42857142857142855,
+      "avg_steps": 3.142857142857143,
+      "avg_time_s": 106.16142857142857,
+      "error_count": 0
+    }
+  }
+}

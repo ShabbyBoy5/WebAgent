@@ -28,6 +28,68 @@ from reflexion import compare_states
 from sentinel import evaluate_candidate
 
 
+def _dreamer_reactive_step(dreamer, screenshot_b64, task, action_history, tree_str):
+    """Use Dreamer to propose a single action, then convert to structured format."""
+    from action_generator import _parse_action
+    from llm_call import call_text_llm
+
+    # Build imaginations list from history (action, prediction) pairs
+    # For reactive mode we don't have predictions, so just pass action descriptions
+    imaginations = [(a, "") for a in action_history]
+
+    if imaginations:
+        raw_action = dreamer.action_proposal_in_imagination(
+            screenshot_b64, task, imaginations, format="change"
+        )
+    else:
+        # First step — no history, ask Dreamer directly
+        prompt = f"You are looking at a webpage. Your task: {task}\nBased on the screenshot, what is the single best next action? Describe it briefly (e.g. 'click on the search box', 'type sony headphones in the search field')."
+        messages = [
+            {"role": "system", "content": "You are an autonomous intelligent agent tasked with navigating a web browser. Output a single short action description."},
+            {"role": "user", "content": [
+                {"type": "text", "text": prompt},
+                {"type": "image_url", "image_url": {"url": screenshot_b64}},
+            ]},
+        ]
+        raw_action = dreamer._call_model(messages)
+
+    print(f"  Dreamer proposes: {raw_action}")
+
+    # Convert Dreamer's natural language action to structured format
+    convert_prompt = f"""Convert this action description into the correct format.
+
+Action: {raw_action}
+
+Interactive elements on the page:
+{tree_str}
+
+Reply with EXACTLY one line in one of these formats:
+type [<id>] "<text>"
+click [<id>]
+scroll down
+scroll up
+go_back
+stop
+
+Rules:
+- type [id] "text" auto-presses Enter
+- Match the action description to the best element from the list
+- Output ONLY the action line, nothing else"""
+
+    structured = call_text_llm(
+        "Convert natural language web actions to structured format. Output ONLY the action line.",
+        convert_prompt,
+        max_tokens=64,
+    )
+    print(f"  Structured: {structured}")
+
+    parsed = _parse_action(structured)
+    if parsed:
+        parsed["_description"] = raw_action
+        return [parsed]
+    return []
+
+
 def _is_duplicate(action: dict, history: list[str]) -> bool:
     """Check if this action was already taken recently (loop detection)."""
     raw = action.get("raw", "").strip().lower()
@@ -41,7 +103,8 @@ def run_agent(task: str, start_url: str, max_steps: int = 15,
               headless: bool = False, use_planning: bool = False,
               browser_type: str = "chromium", use_sentinel: bool = False,
               plan_first: bool = False, keep_open: bool = False,
-              num_plans: int = 3, min_steps: int = 0):
+              num_plans: int = 3, min_steps: int = 0,
+              use_dreamer: bool = False):
     print(f"Task: {task}")
     print(f"URL:  {start_url}")
     print(f"Max steps: {max_steps}")
@@ -51,7 +114,7 @@ def run_agent(task: str, start_url: str, max_steps: int = 15,
     print()
 
     dreamer = None
-    if use_planning or plan_first:
+    if use_planning or plan_first or use_dreamer:
         print("Loading Dreamer-7B world model...")
         from dreamer_model import DreamerWorldModel
         dreamer = DreamerWorldModel()
@@ -224,6 +287,11 @@ def run_agent(task: str, start_url: str, max_steps: int = 15,
                 corrective_rules=corrective_rules,
                 session_context=session_context,
             )
+        elif use_dreamer and dreamer:
+            # Reactive with Dreamer: Dreamer proposes action, convert to structured format
+            candidates = _dreamer_reactive_step(
+                dreamer, screenshot_b64, task, action_history, tree_str,
+            )
         else:
             candidates = generate_candidates(
                 screenshot_b64, task, action_history, tree_str,
@@ -388,8 +456,10 @@ if __name__ == "__main__":
                         help="Number of plans to generate in plan-first mode (default: 3)")
     parser.add_argument("--min-steps", type=int, default=0,
                         help="Minimum number of action steps each plan must have (default: 0 = no minimum)")
+    parser.add_argument("--dreamer", action="store_true",
+                        help="Use Dreamer-7B for reactive action proposals (instead of Claude)")
     args = parser.parse_args()
 
     run_agent(args.task, args.url, args.max_steps, args.headless, args.planning,
               args.browser, args.sentinel, args.plan_first, args.keep_open,
-              args.num_plans, args.min_steps)
+              args.num_plans, args.min_steps, args.dreamer)

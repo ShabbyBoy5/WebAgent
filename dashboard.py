@@ -27,10 +27,16 @@ from pydantic import BaseModel
 
 from browser_executor import BrowserManager
 from action_generator import generate_full_plans, generate_candidates, kill_active_llm_call as kill_action_llm
-from llm_call import kill_active_llm_call as kill_scoring_llm
+from agent import _dreamer_reactive_step
+from llm_call import (
+    kill_active_llm_call as kill_scoring_llm,
+    SCORING_MODEL_CLAUDE_OPUS,
+    SCORING_MODEL_CODEX_SUBSCRIPTION,
+)
 from planning import select_best_plan, _action_to_description
 from sentinel import evaluate_candidate
 from reflexion import compare_states
+from session_memory import SessionMemory
 
 import time
 
@@ -47,6 +53,7 @@ class RunRequest(BaseModel):
     task: str
     start_url: str = "https://duckduckgo.com"
     model: str = "claude"  # "dreamer" or "claude"
+    scoring_model: str = SCORING_MODEL_CLAUDE_OPUS
     mode: str = "plan-first"  # "plan-first" or "reactive"
     num_plans: int = 3
     min_steps: int = 0
@@ -68,6 +75,9 @@ class DashboardSession:
 # Single active session
 _active_session: DashboardSession | None = None
 _session_lock = threading.Lock()
+
+# Persistent memory across runs — lives until dashboard restarts
+_persistent_memory = SessionMemory()
 
 
 def _emit(session: DashboardSession, event_type: str, data: dict | None = None):
@@ -97,7 +107,7 @@ def _event_callback(session: DashboardSession):
 
 # --- Agent Orchestration (runs in background thread) ---
 
-def _execute_step(session, step_num, action, total, config):
+def _execute_step(session, step_num, action, total, config, task=""):
     """Execute a single action step. Returns True to continue, False to stop."""
     _emit(session, "exec_step", {
         "step": step_num,
@@ -109,21 +119,27 @@ def _execute_step(session, step_num, action, total, config):
 
     if action["action_type"] == "stop":
         _emit(session, "exec_result", {"step": step_num, "status": "stopped"})
+        _persistent_memory.add_entry(step=step_num, action=action["raw"])
         return False
 
     current_tree, current_id_map = session.browser.get_accessibility_tree()
 
-    # Sentinel check
+    # Sentinel check (with learned rules from previous runs)
+    corrective_rules = _persistent_memory.get_corrective_rules() or None
     desc = _action_to_description(action, current_tree)
-    verdict = evaluate_candidate(desc, None, session.browser.current_url())
+    verdict = evaluate_candidate(desc, None, session.browser.current_url(), corrective_rules)
+
+    # Always emit sentinel verdict (SAFE or UNSAFE)
+    _emit(session, "sentinel_verdict", {
+        "step": step_num,
+        "is_safe": verdict.is_safe,
+        "risk_type": verdict.risk_type,
+        "explanation": verdict.explanation,
+    })
+
     if not verdict.is_safe:
-        _emit(session, "sentinel_block", {
-            "step": step_num,
-            "action": action["raw"],
-            "risk_type": verdict.risk_type,
-            "explanation": verdict.explanation,
-        })
         _emit(session, "exec_result", {"step": step_num, "status": "blocked"})
+        _persistent_memory.add_entry(step=step_num, action=action["raw"], was_safe=False)
         return True  # skip but continue
 
     status = session.browser.execute(
@@ -136,11 +152,43 @@ def _execute_step(session, step_num, action, total, config):
     _emit(session, "exec_result", {"step": step_num, "status": status})
 
     if status.startswith("error"):
+        _persistent_memory.add_entry(step=step_num, action=action["raw"],
+                                     actual_summary=f"Status: {status}")
         return False
 
     time.sleep(0.5)
     screenshot_b64 = session.browser.screenshot_b64()
     _emit(session, "screenshot", {"data": screenshot_b64})
+
+    # Reflexion: compare predicted vs actual if prediction available
+    predicted = action.get("_prediction")
+    reflexion_note = None
+    if predicted:
+        post_tree, _ = session.browser.get_accessibility_tree()
+        if post_tree.strip():
+            result = compare_states(
+                action_taken=action["raw"],
+                predicted_state=predicted,
+                actual_tree=post_tree,
+                task=task,
+            )
+            _emit(session, "reflexion", {
+                "step": step_num,
+                "match_score": result.match_score,
+                "diagnosis": result.diagnosis,
+                "mismatch": result.mismatch_detected,
+            })
+            if result.mismatch_detected:
+                reflexion_note = result.corrective_rule
+
+    _persistent_memory.add_entry(
+        step=step_num,
+        action=action["raw"],
+        predicted_state=predicted,
+        actual_summary=f"Status: {status}",
+        was_safe=True,
+        reflexion_note=reflexion_note,
+    )
     return True
 
 
@@ -165,6 +213,13 @@ def run_dashboard_agent(session: DashboardSession):
 
         # --- REACTIVE MODE ---
         if config.mode == "reactive":
+            # Load Dreamer if selected
+            dreamer = None
+            if config.model == "dreamer":
+                _emit(session, "status", {"phase": "loading_model", "message": "Loading Dreamer-7B..."})
+                from dreamer_model import DreamerWorldModel
+                dreamer = DreamerWorldModel()
+
             _emit(session, "status", {"phase": "executing", "message": "Running in reactive mode..."})
             _emit(session, "execution_start", {"total_steps": config.max_steps})
 
@@ -179,9 +234,16 @@ def run_dashboard_agent(session: DashboardSession):
 
                 _emit(session, "status", {"phase": "executing", "message": f"Thinking (step {step+1})..."})
 
-                candidates = generate_candidates(
-                    screenshot_b64, config.task, action_history, tree_str,
-                )
+                session_context = _persistent_memory.format_for_prompt()
+                if dreamer:
+                    candidates = _dreamer_reactive_step(
+                        dreamer, screenshot_b64, config.task, action_history, tree_str,
+                    )
+                else:
+                    candidates = generate_candidates(
+                        screenshot_b64, config.task, action_history, tree_str,
+                        session_context=session_context,
+                    )
                 if not candidates:
                     _emit(session, "status", {"phase": "executing", "message": f"Retrying step {step+1}..."})
                     candidates = generate_candidates(
@@ -195,14 +257,20 @@ def run_dashboard_agent(session: DashboardSession):
                     continue
 
                 best = candidates[0]
-                keep_going = _execute_step(session, step, best, config.max_steps, config)
+                keep_going = _execute_step(session, step, best, config.max_steps, config, task=config.task)
                 action_history.append(best["raw"])
                 if not keep_going:
                     break
 
+            if dreamer is not None:
+                del dreamer
+
         # --- PLAN-FIRST MODE ---
         else:
             _emit(session, "status", {"phase": "planning", "message": "Generating plans..."})
+
+            if config.scoring_model not in (SCORING_MODEL_CLAUDE_OPUS, SCORING_MODEL_CODEX_SUBSCRIPTION):
+                raise ValueError(f"Unsupported scoring model: {config.scoring_model}")
 
             dreamer = None
             if config.model == "dreamer":
@@ -210,12 +278,15 @@ def run_dashboard_agent(session: DashboardSession):
                 from dreamer_model import DreamerWorldModel
                 dreamer = DreamerWorldModel()
 
+            session_context = _persistent_memory.format_for_prompt()
             plan = select_best_plan(
                 screenshot_b64, config.task, tree_str,
                 dreamer=dreamer,
                 current_url=session.browser.current_url(),
                 num_plans=config.num_plans,
                 min_steps=config.min_steps,
+                scoring_model=config.scoring_model,
+                session_context=session_context,
                 event_callback=cb,
             )
 
@@ -235,7 +306,7 @@ def run_dashboard_agent(session: DashboardSession):
             for step_num, action in enumerate(plan):
                 if session.cancelled:
                     raise InterruptedError("Cancelled")
-                keep_going = _execute_step(session, step_num, action, len(plan), config)
+                keep_going = _execute_step(session, step_num, action, len(plan), config, task=config.task)
                 if not keep_going:
                     break
 
